@@ -1,0 +1,2 @@
+Distinguish between mines and rocks (behaviour change)
+- Slow down minesweeper when it hits a rock
