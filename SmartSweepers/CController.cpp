@@ -84,8 +84,13 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 	m_BluePen  = CreatePen(PS_SOLID, 1, RGB(0, 0, 255));
 	m_RedPen   = CreatePen(PS_SOLID, 1, RGB(255, 0, 0));
 	m_GreenPen = CreatePen(PS_SOLID, 1, RGB(0, 150, 0));
-
+	m_BlackPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
+	m_PinkPen  = CreatePen(PS_SOLID, 1, RGB(255,140,140));
+	m_LightPen = CreatePen(PS_SOLID, 1, RGB(255,255,100));
+	m_BrownPen = CreatePen(PS_SOLID, 1, RGB(50,50,0));
 	m_OldPen	= NULL;
+
+	m_dblHighestMaxMines = 0.0;
 
 	//fill the vertex buffers
 	for (int i=0; i<NumSweeperVerts; ++i)
@@ -109,6 +114,9 @@ CController::~CController()
 	DeleteObject(m_BluePen);
 	DeleteObject(m_RedPen);
 	DeleteObject(m_GreenPen);
+	DeleteObject(m_BlackPen);
+	DeleteObject(m_PinkPen);
+	DeleteObject(m_LightPen);
 	DeleteObject(m_OldPen);
 }
 
@@ -196,21 +204,24 @@ bool CController::Update()
 	//Time to update the sweepers for the next iteration
 	else
 	{
-		//update the stats to be used in our stat window
-		//TODO: at the moment this is set to 0 for all sweepers by default.
-		//		You should apply meaningful stats from your sweepers here.
+		int most = 0;
+		int total = 0;
 
-		
-		totalMinesGathered = 0;
 		for (int i=0; i<m_NumSweepers; ++i)
 		{
-			totalMinesGathered += m_vecSweepers[i].MinesGathered();	
+			int mg = m_vecSweepers[i].MinesGathered();				
+			total += mg;
+			if (mg > most) most = mg;
 		}
+		
+		double average = ((float)total / m_NumSweepers);
 
-		avgMinesGathered = totalMinesGathered / m_NumSweepers;
+		//update the stats to be used in our stat window
+				
+		m_vecAvMinesGathered.push_back(average);
+		m_vecMostMinesGathered.push_back(most);
 
-		m_vecAvMinesGathered.push_back(avgMinesGathered);
-		m_vecMostMinesGathered.push_back(totalMinesGathered);
+		if(most > m_dblHighestMaxMines) m_dblHighestMaxMines = most;
 
 		//increment the iteration counter
 		++m_iIterations;
@@ -236,9 +247,6 @@ bool CController::Update()
 //----------------------------------------------------------------------------------
 void CController::Render(HDC surface)
 {
-	//render the stats
-	string s = "Iteration:          " + itos(m_iIterations);
-	TextOut(surface, 5, 0, s.c_str(), s.size());
 
 	//do not render if running at accelerated speed
 	if (!m_bFastRender)
@@ -251,11 +259,11 @@ void CController::Render(HDC surface)
 		{
 			if ( m_vecObjects[i].getType() == CCollisionObject::Mine)
 			{
-				SelectObject(surface, m_GreenPen);
+				SelectObject(surface, m_PinkPen);
 			}
 			else if ( m_vecObjects[i].getType() == CCollisionObject::Rock)
 			{
-				SelectObject(surface, m_BluePen );
+				SelectObject(surface, m_BrownPen );
 			}
 			else if ( m_vecObjects[i].getType() == CCollisionObject::SuperMine)
 			{
@@ -269,12 +277,14 @@ void CController::Render(HDC surface)
 			//draw the mines
 			MoveToEx(surface, (int)mineVB[0].x, (int)mineVB[0].y, NULL);
 
-			for (int vert=1; vert<mineVB.size(); ++vert)
-			{
-				LineTo(surface, (int)mineVB[vert].x, (int)mineVB[vert].y);
-			}
-
+			LineTo(surface, (int)mineVB[1].x, (int)mineVB[1].y);
+			LineTo(surface, (int)mineVB[2].x, (int)mineVB[2].y);			
+			LineTo(surface, (int)mineVB[3].x, (int)mineVB[3].y);					
 			LineTo(surface, (int)mineVB[0].x, (int)mineVB[0].y);
+
+			LineTo(surface, (int)mineVB[2].x, (int)mineVB[2].y);
+			MoveToEx(surface, (int)mineVB[1].x, (int)mineVB[1].y, NULL);
+			LineTo(surface, (int)mineVB[3].x, (int)mineVB[3].y);
 			
 		}
        		
@@ -330,12 +340,19 @@ void CController::Render(HDC surface)
 		//put the old pen back
 		SelectObject(surface, m_OldPen);
 
-	}//end if
+	}
+	else
+	{
+		PlotStats(surface);
+	}
 
-  else
-  {
-    PlotStats(surface);
-  }
+	
+	//render the stats
+	string s = "Iteration:          " + itos(m_iIterations);
+	TextOut(surface, 5, 0, s.c_str(), s.size());
+	
+	string s2 = "Progress:   " + itos(m_iTicks) + "/" + itos(CParams::iNumTicks) + " ticks";
+	TextOut(surface, 5, 20, s2.c_str(), s2.size());
 
 }
 //--------------------------PlotStats-------------------------------------

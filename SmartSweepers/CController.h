@@ -57,13 +57,17 @@ private:
 	//stores the most MinesGathered per iteration
 	vector<double>		   m_vecMostMinesGathered;
 
-
+	double m_dblHighestMaxMines;
 
 	//pens we use for the stats
 	HPEN				m_RedPen;
 	HPEN				m_BluePen;
 	HPEN				m_GreenPen;
 	HPEN				m_OldPen;
+	HPEN				m_BlackPen;
+	HPEN				m_PinkPen;
+	HPEN				m_LightPen;
+	HPEN				m_BrownPen;
 	
 	//handle to the application window
 	HWND				m_hwndMain;
