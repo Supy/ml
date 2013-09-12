@@ -94,13 +94,13 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 		double angle = Vec2DAngle(m_vLookAt, direction) * 180 / CParams::dPi;
 
 		// Which quadrant does the mine fall into
-		if(angle >= -90.0 && angle < -30.0)
+		if(angle >= -90.0 && angle < -35.0)
 			minesLeft = true;
-		else if(angle >= -30.0 && angle < 0.0)
+		else if(angle >= -35.0 && angle < 0.0)
 			minesForwardLeft = true;
-		else if(angle >= 0.0 && angle < 30.0)
+		else if(angle >= 0.0 && angle < 35.0)
 			minesForwardRight = true;
-		else if(angle >= 30.0 && angle <= 90.0)
+		else if(angle >= 35.0 && angle <= 90.0)
 			minesRight = true;
 	}
 
