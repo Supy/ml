@@ -90,6 +90,14 @@ private:
 	// multi layer perceptron
 	CMlp mlp;
 
+	
+	double totalMinesGathered;
+	double avgMinesGathered;
+
+	bool isFirstTick;
+	bool hasTrained;
+	bool hasRendered;
+
 public:
 
 	CController(HWND hwndMain);

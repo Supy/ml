@@ -31,13 +31,6 @@ const SPoint mine[NumMineVerts] = {SPoint(-1, -1),
                                    SPoint(1, 1),
                                    SPoint(1, -1)};
 
-double totalMinesGathered;
-double avgMinesGathered;
-
-bool isFirstTick = true;
-
-bool hasTrained = false;
-bool hasRendered = false;
 
 //---------------------------------------constructor---------------------
 //
@@ -96,6 +89,11 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 	{
 		m_MineVB.push_back(mine[i]);
 	}
+
+	
+	isFirstTick = true;
+	hasTrained = false;
+	hasRendered = false;
 
 }
 
@@ -362,7 +360,7 @@ void CController::Render(HDC surface)
 		string s = "Training...";
 		TextOut(surface, 5, 0, s.c_str(), s.size());
 
-		string s = "This generally takes under 10 seconds.";
+		s = "This generally takes under 10 seconds.";
 		TextOut(surface, 5, 20, s.c_str(), s.size());
 
 		hasRendered = true;
