@@ -254,6 +254,17 @@ int WINAPI WinMain(	HINSTANCE hinstance,
 	ShowWindow(hwnd, SW_SHOWDEFAULT );
 	UpdateWindow(hwnd);
 
+	//Resize the window to take into account window border sizes.
+	//This avoids the silly offscreen regions.
+	RECT rcClient, rcWind;
+	POINT ptDiff;
+	GetClientRect(hwnd, &rcClient);
+	GetWindowRect(hwnd, &rcWind);
+	ptDiff.x = (rcWind.right - rcWind.left) - rcClient.right;
+	ptDiff.y = (rcWind.bottom - rcWind.top) - rcClient.bottom;
+	MoveWindow(hwnd, rcWind.left, rcWind.top, CParams::WindowWidth + ptDiff.x, CParams::WindowHeight+ptDiff.y, TRUE);
+
+
 	//create a timer
 	CTimer timer(CParams::iFramesPerSecond);
 
