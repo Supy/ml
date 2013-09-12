@@ -13,8 +13,6 @@
 
 
 
-
-
 ///////////////////////GLOBALS ////////////////////////////////////
 
 char*			szApplicationName = "Smart Sweepers v1.0";
@@ -33,17 +31,12 @@ CParams   g_Params;
 //-----------------------------------------------------------------------
 void Cleanup()
 {
-	if (g_pController) 
-
-		delete g_pController;
+	if (g_pController) delete g_pController;
 }
 //-----------------------------------WinProc-----------------------------
 //
 //-----------------------------------------------------------------------
-LRESULT CALLBACK WindowProc(HWND hwnd, 
-						                UINT msg, 
-                            WPARAM wparam, 
-                            LPARAM lparam)
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	//these hold the dimensions of the client window area
 	static int cxClient, cyClient;
@@ -200,56 +193,48 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 //-----------------------------------WinMain-----------------------------------------
 //	Entry point for our windows application
 //-----------------------------------------------------------------------------------
-int WINAPI WinMain(	HINSTANCE hinstance,
-					          HINSTANCE hprevinstance,
-					          LPSTR lpcmdline,
-					          int ncmdshow)
+int WINAPI WinMain(	HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline, int ncmdshow)
 {
-
-	WNDCLASSEX winclass; 
-	HWND	   hwnd;	 
-	MSG		   msg;		 
-
+	
 	// first fill in the window class stucture
-	winclass.cbSize       = sizeof(WNDCLASSEX);
-	winclass.style			  = CS_HREDRAW | CS_VREDRAW;
+	WNDCLASSEX winclass;  
+	winclass.cbSize			= sizeof(WNDCLASSEX);
+	winclass.style			= CS_HREDRAW | CS_VREDRAW;
 	winclass.lpfnWndProc	= WindowProc;
 	winclass.cbClsExtra		= 0;
 	winclass.cbWndExtra		= 0;
 	winclass.hInstance		= hinstance;
-	winclass.hIcon			  = LoadIcon(hinstance, MAKEINTRESOURCE(IDI_ICON1));
-	winclass.hCursor		  = LoadCursor(NULL, IDC_ARROW); 
-	winclass.hbrBackground= NULL; 
+	winclass.hIcon			= LoadIcon(hinstance, MAKEINTRESOURCE(IDI_ICON1));
+	winclass.hCursor		= LoadCursor(NULL, IDC_ARROW); 
+	winclass.hbrBackground	= NULL; 
 	winclass.lpszMenuName	= NULL;
-	winclass.lpszClassName= szWindowClassName;
-	winclass.hIconSm      = LoadIcon(hinstance, MAKEINTRESOURCE(IDI_ICON1));
-
+	winclass.lpszClassName	= szWindowClassName;
+	winclass.hIconSm		= LoadIcon(hinstance, MAKEINTRESOURCE(IDI_ICON1));
 
 	// register the window class
 	if (!RegisterClassEx(&winclass))
 	{
 		MessageBox(NULL, "Error Registering Class!", "Error", 0);
-    return 0;
-	}
-
-	// create the window (one that cannot be resized)
-	if (!(hwnd = CreateWindowEx(NULL,									
-								              szWindowClassName,						
-								              szApplicationName,						
-								              WS_OVERLAPPED | WS_VISIBLE | WS_CAPTION | WS_SYSMENU,
-                              GetSystemMetrics(SM_CXSCREEN)/2 - CParams::WindowWidth/2,
-                              GetSystemMetrics(SM_CYSCREEN)/2 - CParams::WindowHeight/2,									
-								              CParams::WindowWidth,
-                              CParams::WindowHeight,				
-								              NULL,									
-								              NULL,								
-								              hinstance,								
-								              NULL)))	
-	{
-    MessageBox(NULL, "Error Creating Window!", "Error", 0);
 		return 0;
 	}
 	
+	HWND	   hwnd;	 
+	// create the window (one that cannot be resized)
+	if (!(hwnd = CreateWindowEx(NULL,
+		szWindowClassName,
+		szApplicationName,						
+		WS_OVERLAPPED | WS_VISIBLE | WS_CAPTION | WS_SYSMENU,
+        GetSystemMetrics(SM_CXSCREEN)/2 - CParams::WindowWidth/2,
+        GetSystemMetrics(SM_CYSCREEN)/2 - CParams::WindowHeight/2,									
+		CParams::WindowWidth,
+        CParams::WindowHeight,				
+		NULL, NULL,								
+		hinstance,								
+		NULL)))	
+	{
+		MessageBox(NULL, "Error Creating Window!", "Error", 0);
+		return 0;
+	}
 	//Show the window
 	ShowWindow(hwnd, SW_SHOWDEFAULT );
 	UpdateWindow(hwnd);
@@ -264,27 +249,22 @@ int WINAPI WinMain(	HINSTANCE hinstance,
 	ptDiff.y = (rcWind.bottom - rcWind.top) - rcClient.bottom;
 	MoveWindow(hwnd, rcWind.left, rcWind.top, CParams::WindowWidth + ptDiff.x, CParams::WindowHeight+ptDiff.y, TRUE);
 
-
 	//create a timer
 	CTimer timer(CParams::iFramesPerSecond);
-
-	//start the timer
 	timer.Start();
-
+	
 	// Enter the message loop
+	MSG msg;		
 	bool bDone = FALSE;
-
 	while(!bDone)
 	{
-					
 		while( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ) 
 		{
+			//Stop loop if it's a quit message
 			if( msg.message == WM_QUIT ) 
 			{
-				//Stop loop if it's a quit message
 				bDone = TRUE;
 			} 
-
 			else 
 			{
 				TranslateMessage( &msg );
@@ -294,19 +274,17 @@ int WINAPI WinMain(	HINSTANCE hinstance,
 							
 		if (timer.ReadyForNextFrame() || g_pController->FastRender())
 		{	
-		  if(!g_pController->Update())
+			//we have a problem, end app
+			if(!g_pController->Update())
 			{
-				//we have a problem, end app
 				bDone = TRUE;
 			}
 
 			//this will call WM_PAINT which will render our scene
 			InvalidateRect(hwnd, NULL, TRUE);
 			UpdateWindow(hwnd);
-    }					
-					
-	}//end while
-	
+		}					
+	}
 
     // Clean up everything and exit the app
     Cleanup();
