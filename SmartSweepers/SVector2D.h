@@ -82,6 +82,15 @@ inline double Vec2DLength(const SVector2D &v)
 	return sqrt(v.x * v.x + v.y * v.y);
 }
 
+//------------------------- Vec2DLengthSquared -----------------------------
+//
+//	returns the length of a 2D vector
+//--------------------------------------------------------------------
+inline double Vec2DLengthSquared(const SVector2D &v)
+{
+	return v.x * v.x + v.y * v.y;
+}
+
 //------------------------- Vec2DNormalize -----------------------------
 //
 //	normalizes a 2D Vector

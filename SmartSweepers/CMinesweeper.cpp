@@ -147,17 +147,15 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 // Returns a vector of object ID's who are within a given radius of the Minesweeper
 vector<int> CMinesweeper::GetNearbyMines(vector<CCollisionObject> &objects, double range)
 {
-	double rsquared = range*range;
-	SVector2D currentdelta;
+	double rangesquared = range*range;
 
 	vector<int> nearbyObjects;
 	//cycle through mines to find closest
 	for (int i=0; i<objects.size(); i++)
 	{
-		currentdelta = objects[i].getPosition() - m_vPosition;
-		double len_to_object = currentdelta.x * currentdelta.x + currentdelta.y * currentdelta.y;
+		double len_to_object = Vec2DLengthSquared(objects[i].getPosition() - m_vPosition);
 
-		if (len_to_object <= range)
+		if (len_to_object <= rangesquared)
 		{
 			nearbyObjects.push_back(i);	
 		}
@@ -173,17 +171,14 @@ vector<int> CMinesweeper::GetNearbyMines(vector<CCollisionObject> &objects, doub
 //-----------------------------------------------------------------------
 SVector2D CMinesweeper::GetClosestMine(vector<CCollisionObject> &objects)
 {
-	double			closest_so_far = 99999;
+	double			closest_so_far = 999999999;
 
 	SVector2D		vClosestObject(0, 0);
-
-	SVector2D		cmv(0,0);
 
 	//cycle through mines to find closest
 	for (int i=0; i<objects.size(); i++)
 	{
-		cmv = objects[i].getPosition() - m_vPosition;
-		double len_to_object = cmv.x * cmv.x + cmv.y * cmv.y;
+		double len_to_object = Vec2DLengthSquared(objects[i].getPosition() - m_vPosition);
 
 		if (len_to_object < closest_so_far)
 		{
@@ -191,7 +186,7 @@ SVector2D CMinesweeper::GetClosestMine(vector<CCollisionObject> &objects)
 			
 			vClosestObject	= objects[i].getPosition() - m_vPosition;
 
-      m_iClosestMine = i;
+			m_iClosestMine = i;
 		}
 	}
 
