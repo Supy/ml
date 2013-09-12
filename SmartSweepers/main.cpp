@@ -42,7 +42,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	static int cxClient, cyClient;
 
 	//used to create the back buffer
-	static HDC		  hdcBackBuffer;
+	static HDC		hdcBackBuffer;
 	static HBITMAP	hBitmap;
 	static HBITMAP	hOldBitmap; 
 
@@ -189,13 +189,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 }//end WinProc
 
-
-//-----------------------------------WinMain-----------------------------------------
-//	Entry point for our windows application
-//-----------------------------------------------------------------------------------
-int WINAPI WinMain(	HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline, int ncmdshow)
+void DisplayMainWindow(HINSTANCE hinstance)
 {
-	
 	// first fill in the window class stucture
 	WNDCLASSEX winclass;  
 	winclass.cbSize			= sizeof(WNDCLASSEX);
@@ -215,7 +210,7 @@ int WINAPI WinMain(	HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdlin
 	if (!RegisterClassEx(&winclass))
 	{
 		MessageBox(NULL, "Error Registering Class!", "Error", 0);
-		return 0;
+		return;
 	}
 	
 	HWND	   hwnd;	 
@@ -233,7 +228,7 @@ int WINAPI WinMain(	HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdlin
 		NULL)))	
 	{
 		MessageBox(NULL, "Error Creating Window!", "Error", 0);
-		return 0;
+		return;
 	}
 	//Show the window
 	ShowWindow(hwnd, SW_SHOWDEFAULT );
@@ -290,6 +285,17 @@ int WINAPI WinMain(	HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdlin
     Cleanup();
     UnregisterClass( szWindowClassName, winclass.hInstance );
 	
+
+}
+
+
+//-----------------------------------WinMain-----------------------------------------
+//	Entry point for our windows application
+//-----------------------------------------------------------------------------------
+int WINAPI WinMain(	HINSTANCE hinstance, HINSTANCE hprevinstance, LPSTR lpcmdline, int ncmdshow)
+{	
+	DisplayMainWindow(hinstance);
+
 	return 0;
 
 } // end WinMain

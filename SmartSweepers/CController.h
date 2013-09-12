@@ -66,7 +66,6 @@ private:
 	HPEN				m_OldPen;
 	HPEN				m_BlackPen;
 	HPEN				m_PinkPen;
-	HPEN				m_LightPen;
 	HPEN				m_BrownPen;
 	
 	//handle to the application window
@@ -81,25 +80,24 @@ private:
 	//iteration counter
 	int					m_iIterations;
 
-  //window dimensions
-  int         cxClient, cyClient;
+	//window dimensions
+	int         cxClient, cyClient;
 
-  //this function plots a graph of the average and best MinesGathered
-  //over the course of a run
-  void   PlotStats(HDC surface);
+	//this function plots a graph of the average and best MinesGathered
+	//over the course of a run
+	void   PlotStats(HDC surface);
 
-  CMlp mlp;
+	// multi layer perceptron
+	CMlp mlp;
 
 public:
 
 	CController(HWND hwndMain);
-
 	~CController();
 
 	void		Render(HDC surface);
 
-	void		WorldTransform(vector<SPoint> &VBuffer,
-                         SVector2D      vPos);
+	void		WorldTransform(vector<SPoint> &VBuffer, SVector2D vPos);
 	
 	bool		Update();
 

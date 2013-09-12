@@ -66,18 +66,15 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 	//initialize mines in random positions within the application window
 	for (int i=0; i<m_NumMines; ++i)
 	{
-		m_vecObjects.push_back(CCollisionObject(CCollisionObject::Mine, SVector2D(RandFloat() * cxClient,
-                                   RandFloat() * cyClient)));
+		m_vecObjects.push_back(CCollisionObject(CCollisionObject::Mine, SVector2D(RandFloat() * cxClient, RandFloat() * cyClient)));
 	}
 	for (int i=0; i<m_NumSuperMines; ++i)
 	{
-		m_vecObjects.push_back(CCollisionObject(CCollisionObject::SuperMine, SVector2D(RandFloat() * cxClient,
-                                   RandFloat() * cyClient)));
+		m_vecObjects.push_back(CCollisionObject(CCollisionObject::SuperMine, SVector2D(RandFloat() * cxClient, RandFloat() * cyClient)));
 	}
 	for (int i=0; i<m_NumRocks; ++i)
 	{
-		m_vecObjects.push_back(CCollisionObject(CCollisionObject::Rock, SVector2D(RandFloat() * cxClient,
-                                   RandFloat() * cyClient)));
+		m_vecObjects.push_back(CCollisionObject(CCollisionObject::Rock, SVector2D(RandFloat() * cxClient, RandFloat() * cyClient)));
 	}
 
 	//create a pen for the graph drawing
@@ -86,7 +83,6 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 	m_GreenPen = CreatePen(PS_SOLID, 1, RGB(0, 150, 0));
 	m_BlackPen = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 	m_PinkPen  = CreatePen(PS_SOLID, 1, RGB(255,140,140));
-	m_LightPen = CreatePen(PS_SOLID, 1, RGB(255,255,100));
 	m_BrownPen = CreatePen(PS_SOLID, 1, RGB(50,50,0));
 	m_OldPen	= NULL;
 
@@ -116,7 +112,6 @@ CController::~CController()
 	DeleteObject(m_GreenPen);
 	DeleteObject(m_BlackPen);
 	DeleteObject(m_PinkPen);
-	DeleteObject(m_LightPen);
 	DeleteObject(m_OldPen);
 }
 
@@ -170,8 +165,7 @@ bool CController::Update()
 			}
 				
 			//see if it's found a mine
-			int GrabHit = m_vecSweepers[i].CheckForMine(m_vecObjects,
-													CParams::dMineScale);
+			int GrabHit = m_vecSweepers[i].CheckForMine(m_vecObjects, CParams::dMineScale);
 
 			if (GrabHit >= 0)
 			{
@@ -186,17 +180,17 @@ bool CController::Update()
 					bool hit = false;
 					do{
 						hit = false;
-						m_vecObjects[GrabHit] = CCollisionObject(m_vecObjects[GrabHit].getType(),SVector2D(RandFloat() * cxClient,
-												RandFloat() * cyClient));
+						m_vecObjects[GrabHit] = CCollisionObject(m_vecObjects[GrabHit].getType(),SVector2D(RandFloat() * cxClient, RandFloat() * cyClient));
 
 						for (int i=0; i<m_NumSweepers; ++i)
 						{
-							if(m_vecSweepers[i].CheckCollides(m_vecObjects[GrabHit], CParams::dMineScale)){
+							if(m_vecSweepers[i].CheckCollides(m_vecObjects[GrabHit], CParams::dMineScale))
+							{
 								hit = true;
 								break;
 							}
 						}
-					}while(hit);
+					} while(hit);
 				}
 			}
 		}
@@ -214,7 +208,7 @@ bool CController::Update()
 			if (mg > most) most = mg;
 		}
 		
-		double average = ((float)total / m_NumSweepers);
+		double average = ((double)total / m_NumSweepers);
 
 		//update the stats to be used in our stat window
 				
@@ -236,8 +230,7 @@ bool CController::Update()
 		}
 	}
 
-	if(isFirstTick)
-		isFirstTick = false;
+	if(isFirstTick) isFirstTick = false;
 
 	return true;
 }
@@ -362,15 +355,20 @@ void CController::Render(HDC surface)
 //------------------------------------------------------------------------
 void CController::PlotStats(HDC surface)
 {
-	//		You should plot meaningful stats from your sweepers here.
-	int lastMost = (m_vecMostMinesGathered.size() > 0) ? m_vecMostMinesGathered.back() : 0;
-	int lastAverage = (m_vecMostMinesGathered.size() > 0) ? m_vecAvMinesGathered.back() : 0;
-	
-	string s = "Most MinesGathered:       " + ftos(lastMost);
-	TextOut(surface, 5, 40, s.c_str(), s.size());
+	int iterationnumber = m_vecMostMinesGathered.size()-1;
 
-    s = "Average MinesGathered: " + ftos(lastAverage);
-	TextOut(surface, 5, 60, s.c_str(), s.size());
+
+	//		You should plot meaningful stats from your sweepers here.
+	string temp;
+
+	std::string moststr = "Most MinesGathered:       ";
+	std::string avgstr =  "Average MinesGathered:  ";
+	
+	temp = moststr + ((iterationnumber >= 0) ? ftos(m_vecMostMinesGathered.back()) : "-");
+	TextOut(surface, 5, 40, temp.c_str(), temp.size());
+		
+	temp = avgstr + ((iterationnumber >= 0) ? ftos(m_vecAvMinesGathered.back()) : "-");
+	TextOut(surface, 5, 60, temp.c_str(), temp.size());
     
 	// -------------- Iteration Graphs ----------------------------------
 	
