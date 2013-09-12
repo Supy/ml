@@ -362,44 +362,47 @@ void CController::Render(HDC surface)
 //------------------------------------------------------------------------
 void CController::PlotStats(HDC surface)
 {
-	//TODO: at the moment this is set to 0 by default.
 	//		You should plot meaningful stats from your sweepers here.
-    string s = "Total MinesGathered:       " + ftos(totalMinesGathered);
-	TextOut(surface, 5, 20, s.c_str(), s.size());
-
-     s = "Average MinesGathered: " + ftos(avgMinesGathered);
+	int lastMost = (m_vecMostMinesGathered.size() > 0) ? m_vecMostMinesGathered.back() : 0;
+	int lastAverage = (m_vecMostMinesGathered.size() > 0) ? m_vecAvMinesGathered.back() : 0;
+	
+	string s = "Most MinesGathered:       " + ftos(lastMost);
 	TextOut(surface, 5, 40, s.c_str(), s.size());
-    
-    //render the graph
-    float HSlice = (float)cxClient/(m_iIterations+1);
-	float VSlice = (float)cyClient/((1)*2);
 
-    //plot the graph for the best MinesGathered
-    float x = 0;
+    s = "Average MinesGathered: " + ftos(lastAverage);
+	TextOut(surface, 5, 60, s.c_str(), s.size());
     
-    m_OldPen = (HPEN)SelectObject(surface, m_RedPen);
+	// -------------- Iteration Graphs ----------------------------------
+	
 
-    MoveToEx(surface, 0, cyClient, NULL);
-    
-    for (int i=0; i<m_vecMostMinesGathered.size(); ++i)
+	// -------------- Average Mines Gathered ----------------------------
+	int top = 100; int bottom = 250;
+	int left = 5; int right = 395;
+
+	// draw border
+	SelectObject(surface, m_BlackPen);
+	MoveToEx(surface, left-1, top-1, NULL);
+	LineTo(surface, right+1, top-1);
+	LineTo(surface, right+1, bottom+1);
+	LineTo(surface, left-1, bottom+1);
+	LineTo(surface, left-1, top-1);
+
+	// calculate scale
+	double scale = (bottom-top) / m_dblHighestMaxMines;
+
+	MoveToEx(surface, left, bottom-2, NULL);
+	SelectObject(surface, m_RedPen);
+	for (size_t i=0; i<m_vecMostMinesGathered.size(); ++i)
     {
-       LineTo(surface, x, cyClient - VSlice*m_vecMostMinesGathered[i]);
-
-       x += HSlice;
+		MoveToEx(surface, left+i, bottom, NULL);
+		LineTo(surface, left + i, bottom - m_vecMostMinesGathered[i]*scale);
     }
 
-    //plot the graph for the average MinesGathered
-    x = 0;
-
-    SelectObject(surface, m_BluePen);
-
-    MoveToEx(surface, 0, cyClient, NULL);
-    
-    for (int i=0; i<m_vecAvMinesGathered.size(); ++i)
+	MoveToEx(surface, left, bottom-2, NULL);
+	SelectObject(surface, m_BluePen);
+	for (size_t i=0; i<m_vecAvMinesGathered.size(); ++i)
     {
-       LineTo(surface, (int)x, (int)(cyClient - VSlice*m_vecAvMinesGathered[i]));
-
-       x += HSlice;
+       LineTo(surface, left + i, bottom - m_vecAvMinesGathered[i]*scale);
     }
 
     //replace the old pen
