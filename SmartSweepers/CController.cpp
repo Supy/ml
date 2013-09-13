@@ -93,6 +93,10 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 	hasTrained = false;
 	hasRendered = false;
 
+	lastminecmciteration = 0;
+	maxmaxmines = 1;
+	lastrockcmciteration = 0;
+	maxmaxrocks = 1;
 }
 
 
@@ -403,6 +407,8 @@ void CController::PlotStats(HDC surface)
 	//=============== Iteration Graphs ==================================	
 	
 
+	
+
 	// -------------- Mines Gathered ----------------------------
 			
 	std::string mostmstr = "Max Mines Collided:       ";
@@ -430,10 +436,16 @@ void CController::PlotStats(HDC surface)
 
 	if (iterationcount > 0)
 	{
-		// calculate max
-		auto maxmaxminesptr = std::max_element(m_vecMaxMinesGathered.begin()+displayit_start, m_vecMaxMinesGathered.end());
-		double maxmaxmines = *maxmaxminesptr;
-		if (maxmaxmines == 0) maxmaxmines = 1;
+		//run current max calculations if required
+		if (iterationcount > lastminecmciteration)
+		{			
+			// calculate max
+			auto maxmaxminesptr = std::max_element(m_vecMaxMinesGathered.begin()+displayit_start, m_vecMaxMinesGathered.end());
+			maxmaxmines = *maxmaxminesptr;
+			if (maxmaxmines == 0) maxmaxmines = 1;
+
+			lastminecmciteration = iterationcount;
+		}
 
 		// calculate scale
 		double scale = (bottom-top) / maxmaxmines;
@@ -482,10 +494,17 @@ void CController::PlotStats(HDC surface)
 
 	if (iterationcount > 0)
 	{
-		// calculate max
-		auto maxmaxrocksptr = std::max_element(m_vecMaxRocksGathered.begin()+displayit_start, m_vecMaxRocksGathered.end());
-		double maxmaxrocks = *maxmaxrocksptr;
-		if (maxmaxrocks == 0) maxmaxrocks = 1;
+
+		//run current max calculations if required
+		if (iterationcount > lastrockcmciteration)
+		{			
+			// calculate max
+			auto maxmaxrocksptr = std::max_element(m_vecMaxRocksGathered.begin()+displayit_start, m_vecMaxRocksGathered.end());
+			maxmaxrocks = *maxmaxrocksptr;
+			if (maxmaxrocks == 0) maxmaxrocks = 1;
+
+			lastrockcmciteration = iterationcount;
+		}	
 
 		// calculate scale
 		double scale = (bottom-top) / maxmaxrocks;

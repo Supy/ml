@@ -71,6 +71,14 @@ private:
 	bool hasTrained;
 	bool hasRendered;
 
+	// graph drawing things
+	// mines
+	int lastminecmciteration;
+	double maxmaxmines;
+	//rocks 
+	int lastrockcmciteration;
+	double maxmaxrocks;
+
 
 	//pens we use for the stats
 	HPEN				m_RedPen;
