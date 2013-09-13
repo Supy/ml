@@ -112,6 +112,8 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 	mlp.SetNodeInput(2, minesForwardRight);
 	mlp.SetNodeInput(3, minesRight);
 
+	mlp.CalculateOutput();
+
 	// Our MLP outputs steering directions in the range 0.1-0.9. First we standardize it to 0-1.0.
 	double output = (mlp.GetOutput(0) - 0.1) / 0.8;
 	

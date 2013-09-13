@@ -23,7 +23,8 @@ public:
 
 	void		Train();
 	void		SetNodeInput(int nodeIndex, bool minePresent);
-	double		GetOutput(int outputIndex);	
+	void		CalculateOutput();	
+	double		GetOutput(int outputIndex);
 
 };
 

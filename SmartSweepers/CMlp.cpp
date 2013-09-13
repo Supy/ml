@@ -46,6 +46,8 @@ void CMlp::Train(){
 				SetNodeInput(inputIndex, it->inputs[inputIndex]);
 			}
 
+			CalculateOutput();
+
 			double actualSteeringOutput = GetOutput(0);
 			double targetSteeringOutput = it->steeringOutput;
 
@@ -95,6 +97,10 @@ void CMlp::Train(){
 	}while(errors);
 }
 
+double CMlp::GetOutput(int outputIndex){
+	return nodes[numNodes.size()-1][outputIndex]->output;
+}
+
 // Sets the input of the appropriate input node. The input to the node is whether a mine is present in that quadrant.
 void CMlp::SetNodeInput(int nodeIndex, bool minePresent){
 	if(nodeIndex >= 0 && nodeIndex < numNodes[0]){
@@ -102,7 +108,7 @@ void CMlp::SetNodeInput(int nodeIndex, bool minePresent){
 	}
 }
 
-double CMlp::GetOutput(int outputIndex){
+void CMlp::CalculateOutput(){
 
 	for(int layer = 1; layer < numNodes.size(); layer++){
 		for(int node = 0; node < numNodes[layer]; node++){
@@ -118,9 +124,6 @@ double CMlp::GetOutput(int outputIndex){
 			currentNode.output = result;
 		}
 	}
-
-	// Get the value of the first (and only) output node.
-	return nodes[numNodes.size()-1][outputIndex]->output;
 }
 
 // A comprehensive list of training examples. Contains scenarios the sweepers might find themselves in.
