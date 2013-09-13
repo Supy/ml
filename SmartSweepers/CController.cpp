@@ -77,8 +77,6 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 	m_BrownPen = CreatePen(PS_SOLID, 1, RGB(50,50,0));
 	m_OldPen	= NULL;
 
-	m_dblHighestMaxMines = 0.0;
-
 	//fill the vertex buffers
 	for (int i=0; i<NumSweeperVerts; ++i)
 	{
@@ -169,58 +167,76 @@ bool CController::Update()
 				return false;
 			}
 				
-			//see if it's found a mine
+			//see if it's found an object
 			int GrabHit = m_vecSweepers[i].CheckForMine(m_vecObjects, CParams::dMineScale);
-
 			if (GrabHit >= 0)
 			{
-				if(m_vecObjects[GrabHit].getType()==CCollisionObject::Mine)
+
+				if(m_vecObjects[GrabHit].getType() == CCollisionObject::Mine)
 				{
 					//we have discovered a mine so increase MinesGathered
-					if(!isFirstTick)
-						m_vecSweepers[i].IncrementMinesGathered();
-
-					//mine found so replace the mine with another at a random 
-					//position
-					bool hit = false;
-					do{
-						hit = false;
-						m_vecObjects[GrabHit] = CCollisionObject(m_vecObjects[GrabHit].getType(),SVector2D(RandFloat() * cxClient, RandFloat() * cyClient));
-
-						for (int i=0; i<m_NumSweepers; ++i)
-						{
-							if(m_vecSweepers[i].CheckCollides(m_vecObjects[GrabHit], CParams::dMineScale))
-							{
-								hit = true;
-								break;
-							}
-						}
-					} while(hit);
+					if(!isFirstTick) m_vecSweepers[i].IncrementMinesGathered();
 				}
+				else if(m_vecObjects[GrabHit].getType() == CCollisionObject::Rock)
+				{
+					//we have discovered a mine so increase MinesGathered
+					if(!isFirstTick) m_vecSweepers[i].IncrementRocksGathered();
+				}
+								
+				// object hit, so respawn it 
+				bool hit = false;
+				do{
+					hit = false;
+					m_vecObjects[GrabHit] = CCollisionObject(m_vecObjects[GrabHit].getType(),SVector2D(RandFloat() * cxClient, RandFloat() * cyClient));
+
+					for (int i=0; i<m_NumSweepers; ++i)
+					{
+						if(m_vecSweepers[i].CheckCollides(m_vecObjects[GrabHit], CParams::dMineScale))
+						{
+							hit = true;
+							break;
+						}
+					}
+				} while(hit);				
 			}
 		}
 	}
 	//Time to update the sweepers for the next iteration
 	else
 	{
-		int most = 0;
+		// Update MinesGathered average and max
+		int max = 0;
 		int total = 0;
 
 		for (int i=0; i<m_NumSweepers; ++i)
 		{
 			int mg = m_vecSweepers[i].MinesGathered();				
 			total += mg;
-			if (mg > most) most = mg;
+			if (mg > max) max = mg;
 		}
 		
 		double average = ((double)total / m_NumSweepers);
-
-		//update the stats to be used in our stat window
 				
 		m_vecAvMinesGathered.push_back(average);
-		m_vecMostMinesGathered.push_back(most);
+		m_vecMaxMinesGathered.push_back(max);
 
-		if(most > m_dblHighestMaxMines) m_dblHighestMaxMines = most;
+		// Update RocksGathered average and max
+
+		max = 0;
+		total = 0;
+
+		for (int i=0; i<m_NumSweepers; ++i)
+		{
+			int rg = m_vecSweepers[i].RocksGathered();				
+			total += rg;
+			if (rg > max) max = rg;
+		}
+		
+		average = ((double)total / m_NumSweepers);
+
+		m_vecAvRocksGathered.push_back(average);
+		m_vecMaxRocksGathered.push_back(max);
+
 
 		//increment the iteration counter
 		++m_iIterations;
@@ -373,27 +389,36 @@ void CController::Render(HDC surface)
 //------------------------------------------------------------------------
 void CController::PlotStats(HDC surface)
 {
-	int iterationnumber = m_vecMostMinesGathered.size()-1;
 
+	int iterationcount = m_vecMaxMinesGathered.size();
 
 	//		You should plot meaningful stats from your sweepers here.
 	string temp;
 
-	std::string moststr = "Most MinesGathered:       ";
-	std::string avgstr =  "Average MinesGathered:  ";
+
+
+
 	
-	temp = moststr + ((iterationnumber >= 0) ? ftos(m_vecMostMinesGathered.back()) : "-");
-	TextOut(surface, 5, 40, temp.c_str(), temp.size());
-		
-	temp = avgstr + ((iterationnumber >= 0) ? ftos(m_vecAvMinesGathered.back()) : "-");
-	TextOut(surface, 5, 60, temp.c_str(), temp.size());
     
-	// -------------- Iteration Graphs ----------------------------------
+	//=============== Iteration Graphs ==================================	
 	
 
-	// -------------- Average Mines Gathered ----------------------------
-	int top = 100; int bottom = 250;
+	// -------------- Mines Gathered ----------------------------
+			
+	std::string mostmstr = "Max Mines Collided:       ";
+	std::string avgmstr =  "Average Mines Collided:  ";
+	
+	temp = mostmstr + ((iterationcount > 0) ? ftos(m_vecMaxMinesGathered.back()) : "-");
+	TextOut(surface, 5, 60, temp.c_str(), temp.size());
+		
+	temp = avgmstr + ((iterationcount > 0) ? ftos(m_vecAvMinesGathered.back()) : "-");
+	TextOut(surface, 5, 80, temp.c_str(), temp.size());
+	
+	int top = 100; int bottom = 200;
 	int left = 5; int right = 395;
+
+	int width = right-left;
+	int displayit_start = (iterationcount > width) ? iterationcount - width : 0;
 
 	// draw border
 	SelectObject(surface, m_BlackPen);
@@ -403,24 +428,84 @@ void CController::PlotStats(HDC surface)
 	LineTo(surface, left-1, bottom+1);
 	LineTo(surface, left-1, top-1);
 
-	// calculate scale
-	double scale = (bottom-top) / m_dblHighestMaxMines;
+	if (iterationcount > 0)
+	{
+		// calculate max
+		auto maxmaxminesptr = std::max_element(m_vecMaxMinesGathered.begin()+displayit_start, m_vecMaxMinesGathered.end());
+		double maxmaxmines = *maxmaxminesptr;
+		if (maxmaxmines == 0) maxmaxmines = 1;
 
-	MoveToEx(surface, left, bottom-2, NULL);
-	SelectObject(surface, m_RedPen);
-	for (size_t i=0; i<m_vecMostMinesGathered.size(); ++i)
-    {
-		MoveToEx(surface, left+i, bottom, NULL);
-		LineTo(surface, left + i, bottom - m_vecMostMinesGathered[i]*scale);
-    }
+		// calculate scale
+		double scale = (bottom-top) / maxmaxmines;
 
-	MoveToEx(surface, left, bottom-2, NULL);
-	SelectObject(surface, m_BluePen);
-	for (size_t i=0; i<m_vecAvMinesGathered.size(); ++i)
-    {
-       LineTo(surface, left + i, bottom - m_vecAvMinesGathered[i]*scale);
-    }
+		MoveToEx(surface, left, bottom-2, NULL);
+		SelectObject(surface, m_RedPen);
+	
+		for (size_t i=displayit_start, l=0; i<m_vecMaxMinesGathered.size(); ++i, ++l)
+		{
+			MoveToEx(surface, left + l, bottom, NULL);
+			LineTo(surface, left + l, bottom - m_vecMaxMinesGathered[i]*scale);
+		}
 
+		MoveToEx(surface, left, bottom-2, NULL);
+		SelectObject(surface, m_BluePen);
+		for (size_t i=displayit_start, l=0; i<m_vecAvMinesGathered.size(); ++i, ++l)
+		{
+		   LineTo(surface, left + l, bottom - m_vecAvMinesGathered[i]*scale);
+		}
+	}
+
+	// -------------- Rocks Gathered ----------------------------
+		
+	std::string mostrstr = "Max Rocks Collided:       ";
+	std::string avgrstr =  "Average Rocks Collided:  ";
+	
+	temp = mostrstr + ((iterationcount > 0) ? ftos(m_vecMaxRocksGathered.back()) : "-");
+	TextOut(surface, 5, 220, temp.c_str(), temp.size());
+		
+	temp = avgrstr + ((iterationcount > 0) ? ftos(m_vecAvRocksGathered.back()) : "-");
+	TextOut(surface, 5, 240, temp.c_str(), temp.size());
+
+	top = 260; bottom = 360;
+	left = 5; right = 395;
+
+	width = right-left;
+	displayit_start = (iterationcount > width) ? iterationcount - width : 0;
+
+	// draw border
+	SelectObject(surface, m_BlackPen);
+	MoveToEx(surface, left-1, top-1, NULL);
+	LineTo(surface, right+1, top-1);
+	LineTo(surface, right+1, bottom+1);
+	LineTo(surface, left-1, bottom+1);
+	LineTo(surface, left-1, top-1);
+
+	if (iterationcount > 0)
+	{
+		// calculate max
+		auto maxmaxrocksptr = std::max_element(m_vecMaxRocksGathered.begin()+displayit_start, m_vecMaxRocksGathered.end());
+		double maxmaxrocks = *maxmaxrocksptr;
+		if (maxmaxrocks == 0) maxmaxrocks = 1;
+
+		// calculate scale
+		double scale = (bottom-top) / maxmaxrocks;
+
+		MoveToEx(surface, left, bottom-2, NULL);
+		SelectObject(surface, m_RedPen);
+	
+		for (size_t i=displayit_start, l=0; i<m_vecMaxRocksGathered.size(); ++i, ++l)
+		{
+			MoveToEx(surface, left + l, bottom, NULL);
+			LineTo(surface, left + l, bottom - m_vecMaxRocksGathered[i]*scale);
+		}
+
+		MoveToEx(surface, left, bottom-2, NULL);
+		SelectObject(surface, m_BluePen);
+		for (size_t i=displayit_start, l=0; i<m_vecAvRocksGathered.size(); ++i, ++l)
+		{
+		   LineTo(surface, left + l, bottom - m_vecAvRocksGathered[i]*scale);
+		}
+	}
     //replace the old pen
     SelectObject(surface, m_OldPen);
 }

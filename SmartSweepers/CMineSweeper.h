@@ -41,6 +41,8 @@ private:
 	//the number of Mines gathered by the sweeper 
 	double			m_dMinesGathered;
 
+	double			m_dRocksGathered;
+
 	//the scale of the sweeper when drawn
 	double			m_dScale;
 
@@ -80,9 +82,15 @@ public:
 	//-------------------accessor functions
 	SVector2D	Position()const{return m_vPosition;}
 
-	void			IncrementMinesGathered(){++m_dMinesGathered;}
-
+	// mines
+	void		IncrementMinesGathered(){++m_dMinesGathered;}
 	double		MinesGathered()const{return m_dMinesGathered;}
+
+	// rocks
+	void		IncrementRocksGathered(){++m_dRocksGathered;}
+	double		RocksGathered()const{return m_dRocksGathered;}
+
+
   
 };
 

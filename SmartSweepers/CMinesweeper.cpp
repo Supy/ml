@@ -6,6 +6,7 @@
 CMinesweeper::CMinesweeper():
                              m_dRotation(RandFloat()*CParams::dTwoPi),
                              m_dMinesGathered(0),
+							 m_dRocksGathered(0),
 							 m_dScale(CParams::iSweeperScale),
                              m_iClosestMine(0),
 							 minesForwardLeft(false),
@@ -32,6 +33,7 @@ void CMinesweeper::Reset()
 	
 	//and the MinesGathered
 	m_dMinesGathered = 0;
+	m_dRocksGathered = 0;
 
 	//and the rotation
 	m_dRotation = RandFloat()*CParams::dTwoPi;

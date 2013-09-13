@@ -55,9 +55,22 @@ private:
 	vector<double>		   m_vecAvMinesGathered;
 
 	//stores the most MinesGathered per iteration
-	vector<double>		   m_vecMostMinesGathered;
+	vector<double>		   m_vecMaxMinesGathered;
 
-	double m_dblHighestMaxMines;
+
+	//stores the average RocksGathered per iteration for use 
+	//in graphing.
+	vector<double>		   m_vecAvRocksGathered;
+
+	//stores the most RocksGathered per iteration
+	vector<double>		   m_vecMaxRocksGathered;
+
+
+	// render/update state
+	bool isFirstTick;
+	bool hasTrained;
+	bool hasRendered;
+
 
 	//pens we use for the stats
 	HPEN				m_RedPen;
@@ -90,13 +103,6 @@ private:
 	// multi layer perceptron
 	CMlp mlp;
 
-	
-	double totalMinesGathered;
-	double avgMinesGathered;
-
-	bool isFirstTick;
-	bool hasTrained;
-	bool hasRendered;
 
 public:
 
