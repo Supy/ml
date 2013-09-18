@@ -81,7 +81,7 @@ public:
 
 	bool		CheckCollides(CCollisionObject &object, double size);
 
-	void			Reset();
+	void			Reset(vector<CCollisionObject> &objects);
   
 
 	//-------------------accessor functions

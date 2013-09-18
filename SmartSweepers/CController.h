@@ -77,6 +77,7 @@ private:
 	//SuperMines 
 	int lastSuperMinecmciteration;
 	double maxmaxSuperMines;
+	double mineSpawnThreshold;
 
 
 	//pens we use for the stats

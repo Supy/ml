@@ -26,12 +26,25 @@ CMinesweeper::CMinesweeper():
 //	Resets the sweepers position, MinesGathered and rotation
 //
 //----------------------------------------------------------------------
-void CMinesweeper::Reset()
+void CMinesweeper::Reset(vector<CCollisionObject> &objects)
 {
-	//reset the sweepers positions
-	m_vPosition = SVector2D((RandFloat() * CParams::WindowWidth), 
-					                (RandFloat() * CParams::WindowHeight));
-	
+	double threshold = (CParams::dMineScale+5)*(CParams::dMineScale+5);
+	boolean collision = false;
+	do{
+		//reset the sweepers positions but don't spawn on mines
+		m_vPosition = SVector2D((RandFloat() * CParams::WindowWidth), 
+										(RandFloat() * CParams::WindowHeight));
+		collision = false;
+		for(int i=0; i < objects.size(); i++){
+			if(objects[i].getType() == CCollisionObject::SuperMine){
+				if(Vec2DLengthSquared(m_vPosition-objects[i].getPosition()) <= threshold){
+					collision = true;
+					break;
+				}
+			}
+		}
+	}while(collision);
+
 	//and the MinesGathered
 	m_dMinesGathered = 0;
 	m_dSuperMinesGathered = 0;
@@ -90,7 +103,7 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 	Vec2DNormalize(vClosestMine);
 	double angleToMine = Vec2DAngle(m_vLookAt, vClosestMine);
 	double steering = 0.5;
-	if(abs(angleToMine) > 1.0){
+	if(abs(angleToMine) > 0.5){
 		if(angleToMine <= 0)
 			steering = 0.0;
 		else
@@ -102,8 +115,11 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 
 	// We want more than the closest mine. We want all mines within a certain radius to make a better decision
 	// on which direction to turn.
-	vector<int> nearbyObjects = GetNearbySupermines(objects, CParams::dMineScale + 7);
+	vector<int> nearbyObjects = GetNearbySupermines(objects, CParams::dMineScale + 8);
 	Vec2DNormalize(m_vLookAt);
+
+	// Shift the point we measure angles from to the back of the sweeper
+	// in order to reduce the area where the sweeper doesn't see stuff in front of it.
 	SVector2D fakePosition = m_vPosition - (m_vLookAt*100);
 
 	for(int i=0; i < nearbyObjects.size(); i++){
@@ -250,8 +266,9 @@ SVector2D CMinesweeper::GetClosestSuperMine(vector<CCollisionObject> &objects)
 int CMinesweeper::CheckForMine(vector<CCollisionObject> &objects, double size)
 {
 	SVector2D DistToObject = m_vPosition - objects[m_iClosestMine].getPosition();
-		
-	if (Vec2DLength(DistToObject) < (size + 5))
+	double threshold = (size+5)*(size+5);
+
+	if (Vec2DLengthSquared(DistToObject) < threshold)
 	{
 			return m_iClosestMine;
 	}
@@ -262,8 +279,9 @@ int CMinesweeper::CheckForMine(vector<CCollisionObject> &objects, double size)
 int CMinesweeper::CheckForSuperMine(vector<CCollisionObject> &objects, double size)
 {
 	SVector2D DistToObject = m_vPosition - objects[m_iClosestSuperMine].getPosition();
-		
-	if (Vec2DLength(DistToObject) < (size + 5))
+	double threshold = (size+5)*(size+5);
+
+	if (Vec2DLengthSquared(DistToObject) < threshold)
 	{
 			return m_iClosestSuperMine;
 	}
@@ -273,8 +291,9 @@ int CMinesweeper::CheckForSuperMine(vector<CCollisionObject> &objects, double si
 
 bool CMinesweeper::CheckCollides(CCollisionObject &object, double size){
 	SVector2D DistToObject = m_vPosition - object.getPosition();
-		
-	if (Vec2DLength(DistToObject) < (size + 5))
+	double threshold = (size+5)*(size+5);
+
+	if (Vec2DLengthSquared(DistToObject) < threshold)
 	{
 			return true;
 	}

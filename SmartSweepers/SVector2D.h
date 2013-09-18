@@ -130,7 +130,6 @@ inline int Vec2DSign(SVector2D &v1, SVector2D &v2)
 
 inline double Vec2DAngle(SVector2D &v1, SVector2D &v2){
 	return -Vec2DSign(v1, v2) * acos(Vec2DDot(v1, v2) / (Vec2DLength(v1) * Vec2DLength(v2)));
-	//return acos(Vec2DDot(v1, v2) / (Vec2DLength(v1) * Vec2DLength(v2)));
 }
 
 #endif

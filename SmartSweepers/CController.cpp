@@ -44,6 +44,7 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 															 m_NumSuperMines(CParams::iNumSuperMines),
 										                     m_hwndMain(hwndMain),
 										                     m_iIterations(0),
+															 mineSpawnThreshold((CParams::dMineScale+5)*(CParams::dMineScale+5)),
                                          cxClient(CParams::WindowWidth),
                                          cyClient(CParams::WindowHeight)
 {
@@ -54,13 +55,29 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 	}
 
 	//initialize mines in random positions within the application window
-	for (int i=0; i<m_NumMines; ++i)
-	{
-		m_vecObjects.push_back(CCollisionObject(CCollisionObject::Mine, SVector2D(RandFloat() * cxClient, RandFloat() * cyClient)));
-	}
 	for (int i=0; i<m_NumSuperMines; ++i)
 	{
 		m_vecObjects.push_back(CCollisionObject(CCollisionObject::SuperMine, SVector2D(RandFloat() * cxClient, RandFloat() * cyClient)));
+	}
+
+	for (int i=0; i<m_NumMines; ++i)
+	{
+		SVector2D position;
+		// don't spawn on super mines.
+		boolean collision = false;
+		do{
+			position = SVector2D(RandFloat() * cxClient, RandFloat() * cyClient);
+			collision = false;
+			for(int i=0; i < m_vecObjects.size(); i++){
+				if(m_vecObjects[i].getType() == CCollisionObject::SuperMine){
+					if(Vec2DLengthSquared(position-m_vecObjects[i].getPosition()) <= mineSpawnThreshold){
+						collision = true;
+						break;
+					}
+				}
+			}
+		}while(collision);
+		m_vecObjects.push_back(CCollisionObject(CCollisionObject::Mine, position));
 	}
 
 	//create a pen for the graph drawing
@@ -176,8 +193,22 @@ bool CController::Update()
 					//we have discovered a mine so increase MinesGathered
 					m_vecSweepers[i].IncrementMinesGathered();
 
-					// object hit, so respawn it 
-					m_vecObjects[GrabHit] = CCollisionObject(m_vecObjects[GrabHit].getType(),SVector2D(RandFloat() * cxClient, RandFloat() * cyClient));
+					SVector2D newPosition;
+					// object hit, so respawn it, but not on super mines
+					boolean collision = false;
+					do{
+						newPosition = SVector2D(RandFloat() * cxClient, RandFloat() * cyClient);
+						collision = false;
+						for(int i=0; i < m_vecObjects.size(); i++){
+							if(m_vecObjects[i].getType() == CCollisionObject::SuperMine){
+								if(Vec2DLengthSquared(newPosition-m_vecObjects[i].getPosition()) <= mineSpawnThreshold){
+									collision = true;
+									break;
+								}
+							}
+						}
+					}while(collision);
+					m_vecObjects[GrabHit].setPosition(newPosition);
 
 				}	
 			}
@@ -245,7 +276,7 @@ bool CController::Update()
 		//reset the sweepers positions etc
 		for (int i=0; i<m_NumSweepers; ++i)
 		{
-			m_vecSweepers[i].Reset();
+			m_vecSweepers[i].Reset(m_vecObjects);
 		}
 	}
 
