@@ -129,6 +129,32 @@ void CMlp::CalculateOutput(){
 // A comprehensive list of training examples. Contains scenarios the sweepers might find themselves in.
 void CMlp::LoadTrainingExamples(){
 	using namespace std;
+	array<bool, 2> i1 = {false, false};
+	double steering1 = 0.5;
+	double speed1 = 0.9;
+	TrainingData t1(i1, steering1, speed1);
+
+	array<bool, 2> i2 = {true, false};
+	double steering2 = 0.7;
+	double speed2 = 0.4;
+	TrainingData t2(i2, steering2, speed2);
+
+	array<bool, 2> i3 = {true, true};
+	double steering3 = 0.7;
+	double speed3 = 0.4;
+	TrainingData t3(i3, steering3, speed3);
+
+	array<bool, 2> i4 = {false, true};
+	double steering4 = 0.3;
+	double speed4 = 0.4;
+	TrainingData t4(i4, steering4, speed4);
+
+	trainingData.push_back(t1);
+	trainingData.push_back(t2);
+	trainingData.push_back(t3);
+	trainingData.push_back(t4);
+
+	/*
 
 	array<bool, 2> i1 = {false, false};
 	double steering1 = 0.5;

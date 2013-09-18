@@ -42,7 +42,6 @@ private:
 
 	int					         m_NumMines;
 	int					         m_NumSuperMines;
-	int					         m_NumRocks;
 
 	//vertex buffer for the sweeper shape's vertices
 	vector<SPoint>		   m_SweeperVB;
@@ -58,12 +57,12 @@ private:
 	vector<double>		   m_vecMaxMinesGathered;
 
 
-	//stores the average RocksGathered per iteration for use 
+	//stores the average SuperMinesGathered per iteration for use 
 	//in graphing.
-	vector<double>		   m_vecAvRocksGathered;
+	vector<double>		   m_vecAvSuperMinesGathered;
 
-	//stores the most RocksGathered per iteration
-	vector<double>		   m_vecMaxRocksGathered;
+	//stores the most SuperMinesGathered per iteration
+	vector<double>		   m_vecMaxSuperMinesGathered;
 
 
 	// render/update state
@@ -75,9 +74,9 @@ private:
 	// mines
 	int lastminecmciteration;
 	double maxmaxmines;
-	//rocks 
-	int lastrockcmciteration;
-	double maxmaxrocks;
+	//SuperMines 
+	int lastSuperMinecmciteration;
+	double maxmaxSuperMines;
 
 
 	//pens we use for the stats

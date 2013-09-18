@@ -49,7 +49,6 @@ public:
 
   static int    iNumMines;
   static int    iNumSuperMines;
-  static int    iNumRocks;
 
   //number of time steps we allow for each generation to live
   static int    iNumTicks;

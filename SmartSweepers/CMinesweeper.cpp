@@ -6,7 +6,7 @@
 CMinesweeper::CMinesweeper():
                              m_dRotation(RandFloat()*CParams::dTwoPi),
                              m_dMinesGathered(0),
-							 m_dRocksGathered(0),
+							 m_dSuperMinesGathered(0),
 							 m_dScale(CParams::iSweeperScale),
                              m_iClosestMine(0),
 							 minesForwardLeft(false),
@@ -33,7 +33,7 @@ void CMinesweeper::Reset()
 	
 	//and the MinesGathered
 	m_dMinesGathered = 0;
-	m_dRocksGathered = 0;
+	m_dSuperMinesGathered = 0;
 
 	//and the rotation
 	m_dRotation = RandFloat()*CParams::dTwoPi;
@@ -122,25 +122,27 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 	mlp.SetNodeInput(3, minesRight);
 	*/
 
-	
-
 	minesLeft = minesRight = false;
 
 	// We want more than the closest mine. We want all mines within a certain radius to make a better decision
 	// on which direction to turn.
-	vector<int> nearbySupermineIndices = GetNearbySupermines(objects, CParams::dMineScale + 10);
+	vector<int> nearbyObjects = GetNearbySupermines(objects, CParams::dMineScale + 10);
 	Vec2DNormalize(m_vLookAt);
 	SVector2D fakePosition = m_vPosition - (m_vLookAt*100);
 
-	for(int i=0; i < nearbySupermineIndices.size(); i++){
-		SVector2D direction =   objects[nearbySupermineIndices[i]].getPosition() - fakePosition;
-		double angle = Vec2DAngle(m_vLookAt, direction) * 180 / CParams::dPi;
+	for(int i=0; i < nearbyObjects.size(); i++){
 
-		// Which quadrant does the mine fall into
-		if(angle >= -20.0 && angle < 0.0)
-			minesLeft = true;
-		else if(angle <= 20.0 && angle >= 0.0)
-			minesRight = true;
+		if (objects[nearbyObjects[i]].getType() == CCollisionObject::ObjectType::SuperMine)
+		{			
+			SVector2D direction =   objects[nearbyObjects[i]].getPosition() - fakePosition;
+			double angle = Vec2DAngle(m_vLookAt, direction) * 180 / CParams::dPi;
+
+			// Which quadrant does the mine fall into
+			if(angle >= -20.0 && angle < 0.0)
+				minesLeft = true;
+			else if(angle <= 20.0 && angle >= 0.0)
+				minesRight = true;
+		}
 	}
 
 	// Set the inputs to the MLP of where the mines are located.
@@ -155,6 +157,8 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 	if(output <= 0.499 || output >= 0.501)
 		steering = output;
 	
+	if (output <= 0.499 || output >= 0.501) steering = output;
+
 	// Next we need to use this output in the form -0.3-0.3.
 	double convertedRotation = (steering * CParams::dMaxTurnRate * 2.0) - CParams::dMaxTurnRate;
 	
