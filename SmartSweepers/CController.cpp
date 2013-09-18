@@ -274,7 +274,7 @@ void CController::Render(HDC surface)
 			{
 				if ( m_vecObjects[i].getType() == CCollisionObject::Mine)
 				{
-					SelectObject(surface, m_PinkPen);
+					SelectObject(surface, m_BlackPen);
 				}
 				else if ( m_vecObjects[i].getType() == CCollisionObject::SuperMine)
 				{

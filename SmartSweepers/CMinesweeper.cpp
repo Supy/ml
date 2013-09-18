@@ -94,7 +94,6 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 	}
 
 	/*
-
 	minesLeft = minesRight = minesForwardLeft = minesForwardRight = false;
 
 	// We want more than the closest mine. We want all mines within a certain radius to make a better decision
@@ -127,19 +126,23 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 
 	// We want more than the closest mine. We want all mines within a certain radius to make a better decision
 	// on which direction to turn.
-	vector<int> nearbySupermineIndices = GetNearbyMines(objects, CParams::dMineScale + 10);
+	vector<int> nearbyObjects = GetNearbyMines(objects, CParams::dMineScale + 10);
 	Vec2DNormalize(m_vLookAt);
 	SVector2D fakePosition = m_vPosition - (m_vLookAt*100);
 
-	for(int i=0; i < nearbySupermineIndices.size(); i++){
-		SVector2D direction =   objects[nearbySupermineIndices[i]].getPosition() - fakePosition;
-		double angle = Vec2DAngle(m_vLookAt, direction) * 180 / CParams::dPi;
+	for(int i=0; i < nearbyObjects.size(); i++){
 
-		// Which quadrant does the mine fall into
-		if(angle >= -20.0 && angle < 0.0)
-			minesLeft = true;
-		else if(angle <= 20.0 && angle >= 0.0)
-			minesRight = true;
+		if (objects[nearbyObjects[i]].getType() == CCollisionObject::ObjectType::SuperMine)
+		{			
+			SVector2D direction =   objects[nearbyObjects[i]].getPosition() - fakePosition;
+			double angle = Vec2DAngle(m_vLookAt, direction) * 180 / CParams::dPi;
+
+			// Which quadrant does the mine fall into
+			if(angle >= -20.0 && angle < 0.0)
+				minesLeft = true;
+			else if(angle <= 20.0 && angle >= 0.0)
+				minesRight = true;
+		}
 	}
 
 	// Set the inputs to the MLP of where the mines are located.
