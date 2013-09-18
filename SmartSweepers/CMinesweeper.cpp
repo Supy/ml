@@ -154,8 +154,10 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 	// Our MLP outputs steering directions in the range 0.1-0.9. First we standardize it to 0-1.0.
 	double output = (mlp.GetOutput(0) - 0.1) / 0.8;
 	
+	if (output <= 0.499 || output >= 0.501) steering = output;
+
 	// Next we need to use this output in the form -0.3-0.3.
-	double convertedRotation = (output * CParams::dMaxTurnRate * 2.0) - CParams::dMaxTurnRate;
+	double convertedRotation = (steering * CParams::dMaxTurnRate * 2.0) - CParams::dMaxTurnRate;
 	
 	//TODO: calculate the steering forces here, it is set to 0 for now...
 	double RotForce = convertedRotation;
@@ -219,15 +221,18 @@ SVector2D CMinesweeper::GetClosestMine(vector<CCollisionObject> &objects)
 	//cycle through mines to find closest
 	for (int i=0; i<objects.size(); i++)
 	{
-		double len_to_object = Vec2DLengthSquared(objects[i].getPosition() - m_vPosition);
-
-		if (len_to_object < closest_so_far)
+		if (objects[i].getType() == CCollisionObject::ObjectType::Mine)
 		{
-			closest_so_far	= len_to_object;
-			
-			vClosestObject	= objects[i].getPosition() - m_vPosition;
+			double len_to_object = Vec2DLengthSquared(objects[i].getPosition() - m_vPosition);
 
-			m_iClosestMine = i;
+			if (len_to_object < closest_so_far)
+			{
+				closest_so_far	= len_to_object;
+			
+				vClosestObject	= objects[i].getPosition() - m_vPosition;
+
+				m_iClosestMine = i;
+			}
 		}
 	}
 
