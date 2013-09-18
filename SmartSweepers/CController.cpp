@@ -42,7 +42,6 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 										                     m_iTicks(0),
 										                     m_NumMines(CParams::iNumMines),
 															 m_NumSuperMines(CParams::iNumSuperMines),
-															 m_NumRocks(CParams::iNumRocks),
 										                     m_hwndMain(hwndMain),
 										                     m_iIterations(0),
                                          cxClient(CParams::WindowWidth),
@@ -62,10 +61,6 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 	for (int i=0; i<m_NumSuperMines; ++i)
 	{
 		m_vecObjects.push_back(CCollisionObject(CCollisionObject::SuperMine, SVector2D(RandFloat() * cxClient, RandFloat() * cyClient)));
-	}
-	for (int i=0; i<m_NumRocks; ++i)
-	{
-		m_vecObjects.push_back(CCollisionObject(CCollisionObject::Rock, SVector2D(RandFloat() * cxClient, RandFloat() * cyClient)));
 	}
 
 	//create a pen for the graph drawing
@@ -275,15 +270,11 @@ void CController::Render(HDC surface)
 			m_OldPen = (HPEN)SelectObject(surface, m_GreenPen);
 		
 			//render the mines
-			for (int i=0; i<m_NumMines+m_NumSuperMines+m_NumRocks; ++i)
+			for (int i=0; i<m_NumMines+m_NumSuperMines; ++i)
 			{
 				if ( m_vecObjects[i].getType() == CCollisionObject::Mine)
 				{
 					SelectObject(surface, m_PinkPen);
-				}
-				else if ( m_vecObjects[i].getType() == CCollisionObject::Rock)
-				{
-					SelectObject(surface, m_BrownPen );
 				}
 				else if ( m_vecObjects[i].getType() == CCollisionObject::SuperMine)
 				{

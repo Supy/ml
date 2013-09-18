@@ -15,7 +15,6 @@ int CParams::iSweeperScale          = 0;
 int CParams::iNumSweepers           = 0;
 int CParams::iNumMines              = 0;
 int CParams::iNumSuperMines         = 0;
-int CParams::iNumRocks              = 0;
 int CParams::iNumTicks              = 0;
 double CParams::dMineScale          = 0;
 int CParams::iNumElite              = 0;
@@ -48,8 +47,6 @@ bool CParams::LoadInParameters(char* szFileName)
   grab >> iNumMines;
   grab >> ParamDescription;
   grab >> iNumSuperMines;
-  grab >> ParamDescription;
-  grab >> iNumRocks;
   grab >> ParamDescription;
   grab >> iNumSweepers;
   grab >> ParamDescription;

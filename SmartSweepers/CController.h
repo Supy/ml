@@ -42,7 +42,6 @@ private:
 
 	int					         m_NumMines;
 	int					         m_NumSuperMines;
-	int					         m_NumRocks;
 
 	//vertex buffer for the sweeper shape's vertices
 	vector<SPoint>		   m_SweeperVB;
