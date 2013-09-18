@@ -5,8 +5,8 @@ CMlp::CMlp(void) : learningRate(0.6), maxError(0.001)
 {
 
 	// 4 input nodes, 10 hidden nodes and 2 output nodes (direction and speed).
+	numNodes.push_back(2);
 	numNodes.push_back(4);
-	numNodes.push_back(10);
 	numNodes.push_back(2);
 
 	nodes = new CNode ** [numNodes.size()];
@@ -129,6 +129,32 @@ void CMlp::CalculateOutput(){
 // A comprehensive list of training examples. Contains scenarios the sweepers might find themselves in.
 void CMlp::LoadTrainingExamples(){
 	using namespace std;
+	array<bool, 2> i1 = {false, false};
+	double steering1 = 0.5;
+	double speed1 = 0.9;
+	TrainingData t1(i1, steering1, speed1);
+
+	array<bool, 2> i2 = {true, false};
+	double steering2 = 0.7;
+	double speed2 = 0.4;
+	TrainingData t2(i2, steering2, speed2);
+
+	array<bool, 2> i3 = {true, true};
+	double steering3 = 0.7;
+	double speed3 = 0.4;
+	TrainingData t3(i3, steering3, speed3);
+
+	array<bool, 2> i4 = {false, true};
+	double steering4 = 0.3;
+	double speed4 = 0.4;
+	TrainingData t4(i4, steering4, speed4);
+
+	trainingData.push_back(t1);
+	trainingData.push_back(t2);
+	trainingData.push_back(t3);
+	trainingData.push_back(t4);
+
+	/*
 
 	// Each true/false value represents whether there is a mine in front of the sweeper in a 
 	// particular quadrant. Quadrants are 4 "regions" in front of the mine sweeper.
