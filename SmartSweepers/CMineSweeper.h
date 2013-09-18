@@ -66,7 +66,7 @@ public:
 	//used to transform the sweepers vertices prior to rendering
 	void			WorldTransform(vector<SPoint> &sweeper);
 
-	vector<int> GetNearbyMines(vector<CCollisionObject> &objects, double range);
+	vector<int> GetNearbySupermines(vector<CCollisionObject> &objects, double range);
 
 	//returns a vector to the closest object
 	SVector2D	GetClosestMine(vector<CCollisionObject> &objects);
