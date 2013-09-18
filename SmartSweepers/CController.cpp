@@ -174,29 +174,25 @@ bool CController::Update()
 				if(m_vecObjects[GrabHit].getType() == CCollisionObject::Mine)
 				{
 					//we have discovered a mine so increase MinesGathered
-					if(!isFirstTick) m_vecSweepers[i].IncrementMinesGathered();
+					m_vecSweepers[i].IncrementMinesGathered();
 
 					// object hit, so respawn it 
-					bool hit = false;
-					do{
-						hit = false;
-						m_vecObjects[GrabHit] = CCollisionObject(m_vecObjects[GrabHit].getType(),SVector2D(RandFloat() * cxClient, RandFloat() * cyClient));
+					m_vecObjects[GrabHit] = CCollisionObject(m_vecObjects[GrabHit].getType(),SVector2D(RandFloat() * cxClient, RandFloat() * cyClient));
 
-						for (int i=0; i<m_NumSweepers; ++i)
-						{
-							if(m_vecSweepers[i].CheckCollides(m_vecObjects[GrabHit], CParams::dMineScale))
-							{
-								hit = true;
-								break;
-							}
-						}
-					} while(hit);	
+				}	
+			}
 
-				}
-				else if(m_vecObjects[GrabHit].getType() == CCollisionObject::SuperMine)
+			GrabHit = m_vecSweepers[i].CheckForSuperMine(m_vecObjects, CParams::dMineScale);
+			if (GrabHit >= 0)
+			{
+
+				if(m_vecObjects[GrabHit].getType() == CCollisionObject::SuperMine)
 				{
 					//we have discovered a mine so increase MinesGathered
-					if(!isFirstTick) m_vecSweepers[i].IncrementSuperMinesGathered();
+					m_vecSweepers[i].IncrementSuperMinesGathered();
+
+					m_vecObjects.erase(m_vecObjects.begin()+GrabHit);
+					--m_NumSuperMines;
 				}
 								
 			

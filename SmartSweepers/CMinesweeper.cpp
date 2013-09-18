@@ -9,6 +9,7 @@ CMinesweeper::CMinesweeper():
 							 m_dSuperMinesGathered(0),
 							 m_dScale(CParams::iSweeperScale),
                              m_iClosestMine(0),
+							 m_iClosestSuperMine(0),
 							 minesForwardLeft(false),
 							 minesForwardRight(false),
 							 minesLeft(false),
@@ -82,6 +83,9 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 	
 	//get vector to closest mine
 	SVector2D vClosestMine = GetClosestMine(objects);
+
+	GetClosestSuperMine(objects);
+
 	//normalise it
 	Vec2DNormalize(vClosestMine);
 	double angleToMine = Vec2DAngle(m_vLookAt, vClosestMine);
@@ -93,40 +97,12 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 			steering = 1.0;
 	}
 
-	/*
-	minesLeft = minesRight = minesForwardLeft = minesForwardRight = false;
-
-	// We want more than the closest mine. We want all mines within a certain radius to make a better decision
-	// on which direction to turn.
-	vector<int> nearbyObjectIndices = GetNearbyMines(objects, CParams::dMineScale + 20);
-
-	for(int i=0; i < nearbyObjectIndices.size(); i++){
-		SVector2D direction =   objects[nearbyObjectIndices[i]].getPosition() - m_vPosition;
-		double angle = Vec2DAngle(m_vLookAt, direction) * 180 / CParams::dPi;
-
-		// Which quadrant does the mine fall into
-		if(angle >= -90.0 && angle < -35.0)
-			minesLeft = true;
-		else if(angle >= -35.0 && angle < 0.0)
-			minesForwardLeft = true;
-		else if(angle >= 0.0 && angle < 35.0)
-			minesForwardRight = true;
-		else if(angle >= 35.0 && angle <= 90.0)
-			minesRight = true;
-	}
-
-	// Set the inputs to the MLP of where the mines are located.
-	mlp.SetNodeInput(0, minesLeft);
-	mlp.SetNodeInput(1, minesForwardLeft);
-	mlp.SetNodeInput(2, minesForwardRight);
-	mlp.SetNodeInput(3, minesRight);
-	*/
 
 	minesLeft = minesRight = false;
 
 	// We want more than the closest mine. We want all mines within a certain radius to make a better decision
 	// on which direction to turn.
-	vector<int> nearbyObjects = GetNearbySupermines(objects, CParams::dMineScale + 10);
+	vector<int> nearbyObjects = GetNearbySupermines(objects, CParams::dMineScale + 7);
 	Vec2DNormalize(m_vLookAt);
 	SVector2D fakePosition = m_vPosition - (m_vLookAt*100);
 
@@ -153,10 +129,7 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 
 	// Our MLP outputs steering directions in the range 0.1-0.9. First we standardize it to 0-1.0.
 	double output = (mlp.GetOutput(0) - 0.1) / 0.8;
-
-	if(output <= 0.499 || output >= 0.501)
-		steering = output;
-	
+		
 	if (output <= 0.499 || output >= 0.501) steering = output;
 
 	// Next we need to use this output in the form -0.3-0.3.
@@ -242,6 +215,33 @@ SVector2D CMinesweeper::GetClosestMine(vector<CCollisionObject> &objects)
 
 	return vClosestObject;
 }
+
+SVector2D CMinesweeper::GetClosestSuperMine(vector<CCollisionObject> &objects)
+{
+	double			closest_so_far = 999999999;
+
+	SVector2D		vClosestObject(0, 0);
+
+	//cycle through mines to find closest
+	for (int i=0; i<objects.size(); i++)
+	{
+		if(objects[i].getType() == CCollisionObject::SuperMine){
+			double len_to_object = Vec2DLengthSquared(objects[i].getPosition() - m_vPosition);
+
+			if (len_to_object < closest_so_far)
+			{
+				closest_so_far	= len_to_object;
+			
+				vClosestObject	= objects[i].getPosition() - m_vPosition;
+
+				m_iClosestSuperMine = i;
+			}
+		}
+	}
+
+	return vClosestObject;
+}
+
 //----------------------------- CheckForMine -----------------------------
 //
 //  this function checks for collision with its closest mine (calculated
@@ -254,6 +254,18 @@ int CMinesweeper::CheckForMine(vector<CCollisionObject> &objects, double size)
 	if (Vec2DLength(DistToObject) < (size + 5))
 	{
 			return m_iClosestMine;
+	}
+
+  return -1;
+}
+
+int CMinesweeper::CheckForSuperMine(vector<CCollisionObject> &objects, double size)
+{
+	SVector2D DistToObject = m_vPosition - objects[m_iClosestSuperMine].getPosition();
+		
+	if (Vec2DLength(DistToObject) < (size + 5))
+	{
+			return m_iClosestSuperMine;
 	}
 
   return -1;

@@ -49,6 +49,8 @@ private:
   //index position of closest mine
   int         m_iClosestMine;
 
+  int		m_iClosestSuperMine;
+
   bool		minesForwardLeft;
   bool		minesForwardRight;
   bool		minesLeft;
@@ -70,9 +72,12 @@ public:
 
 	//returns a vector to the closest object
 	SVector2D	GetClosestMine(vector<CCollisionObject> &objects);
+	SVector2D   GetClosestSuperMine(vector<CCollisionObject> &objects);
 
 	//checks to see if the minesweeper has 'collected' a mine
 	int       CheckForMine(vector<CCollisionObject> &objects, double size);
+
+	int			CheckForSuperMine(vector<CCollisionObject> &objects, double size);
 
 	bool		CheckCollides(CCollisionObject &object, double size);
 
