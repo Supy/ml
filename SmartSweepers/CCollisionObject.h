@@ -5,7 +5,7 @@ class SVector2D;
 class CCollisionObject
 {
 public:
-	enum ObjectType { Mine, SuperMine, Rock };
+	enum ObjectType { Mine, SuperMine };
 
 
 	CCollisionObject();

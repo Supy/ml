@@ -41,7 +41,7 @@ private:
 	//the number of Mines gathered by the sweeper 
 	double			m_dMinesGathered;
 
-	double			m_dRocksGathered;
+	double			m_dSuperMinesGathered;
 
 	//the scale of the sweeper when drawn
 	double			m_dScale;
@@ -86,9 +86,9 @@ public:
 	void		IncrementMinesGathered(){++m_dMinesGathered;}
 	double		MinesGathered()const{return m_dMinesGathered;}
 
-	// rocks
-	void		IncrementRocksGathered(){++m_dRocksGathered;}
-	double		RocksGathered()const{return m_dRocksGathered;}
+	// SuperMines
+	void		IncrementSuperMinesGathered(){++m_dSuperMinesGathered;}
+	double		SuperMinesGathered()const{return m_dSuperMinesGathered;}
 
 
   
