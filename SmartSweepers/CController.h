@@ -111,6 +111,12 @@ private:
 	// multi layer perceptron
 	CMlp mlp;
 
+	void		ResetEnvironment();
+
+	int totalSuperMinesCollected;
+	int totalMinesCollected;
+	int maxMinesCollected;
+
 
 public:
 

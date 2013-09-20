@@ -4,9 +4,9 @@
 CMlp::CMlp(void) : learningRate(0.6), maxError(0.001)
 {
 
-	// 4 input nodes, 10 hidden nodes and 2 output nodes (direction and speed).
+	// 2 input nodes, 10 hidden nodes and 2 output nodes (direction and speed).
 	numNodes.push_back(2);
-	numNodes.push_back(4);
+	numNodes.push_back(6);
 	numNodes.push_back(2);
 
 	nodes = new CNode ** [numNodes.size()];
@@ -136,17 +136,17 @@ void CMlp::LoadTrainingExamples(){
 
 	array<bool, 2> i2 = {true, false};
 	double steering2 = 0.7;
-	double speed2 = 0.4;
+	double speed2 = 0.15;
 	TrainingData t2(i2, steering2, speed2);
 
 	array<bool, 2> i3 = {true, true};
-	double steering3 = 0.7;
-	double speed3 = 0.4;
+	double steering3 = 0.65;
+	double speed3 = 0.1;
 	TrainingData t3(i3, steering3, speed3);
 
 	array<bool, 2> i4 = {false, true};
-	double steering4 = 0.3;
-	double speed4 = 0.4;
+	double steering4 = 0.2;
+	double speed4 = 0.15;
 	TrainingData t4(i4, steering4, speed4);
 
 	trainingData.push_back(t1);

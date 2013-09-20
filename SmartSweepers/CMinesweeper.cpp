@@ -13,7 +13,8 @@ CMinesweeper::CMinesweeper():
 							 minesForwardLeft(false),
 							 minesForwardRight(false),
 							 minesLeft(false),
-							 minesRight(false)
+							 minesRight(false),
+							 active(true)
 {
 	//create a random start position
 	m_vPosition = SVector2D((RandFloat() * CParams::WindowWidth), 
@@ -91,7 +92,7 @@ void CMinesweeper::WorldTransform(vector<SPoint> &sweeper)
 //	and acceleration. This is then applied to current velocity vector.
 //
 //-----------------------------------------------------------------------
-bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
+bool CMinesweeper::Update(vector<CCollisionObject> &objects, vector<CMinesweeper> &tanks, CMlp &mlp)
 {
 	
 	//get vector to closest mine
@@ -121,7 +122,6 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 	// Shift the point we measure angles from to the back of the sweeper
 	// in order to reduce the area where the sweeper doesn't see stuff in front of it.
 	SVector2D fakePosition = m_vPosition - (m_vLookAt*100);
-
 	for(int i=0; i < nearbyObjects.size(); i++){
 
 		if (objects[nearbyObjects[i]].getType() == CCollisionObject::ObjectType::SuperMine)
@@ -136,6 +136,22 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 				minesRight = true;
 		}
 	}
+
+
+	// Don't collide with other tanks either
+	vector<int> nearbySweepers = GetNearbySweepers(tanks, CParams::iSweeperScale + 10);
+	for(int i=0; i < nearbySweepers.size(); i++){		
+		SVector2D direction =   tanks[nearbySweepers[i]].Position() - fakePosition;
+		double angle = Vec2DAngle(m_vLookAt, direction) * 180 / CParams::dPi;
+
+		// Which quadrant does the mine fall into
+		if(angle >= -20.0 && angle < 0.0)
+			minesLeft = true;
+		else if(angle <= 20.0 && angle >= 0.0)
+			minesRight = true;
+	}
+
+
 
 	// Set the inputs to the MLP of where the mines are located.
 	mlp.SetNodeInput(0, minesLeft);
@@ -160,7 +176,7 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, CMlp &mlp)
 	m_dRotation += RotForce;
 
 	// Grab our calculated speed.
-	m_dSpeed = mlp.GetOutput(1);	
+	m_dSpeed = (((mlp.GetOutput(1) - 0.1) / 0.8) * CParams::dMaxSpeed);	
 
 	//update Look At 
 	m_vLookAt.x = -sin(m_dRotation);
@@ -194,12 +210,30 @@ vector<int> CMinesweeper::GetNearbySupermines(vector<CCollisionObject> &objects,
 			if (len_to_object <= rangesquared)
 			{
 				nearbyObjects.push_back(i);	
-			}
+			}	
+		}
+	}
+	return nearbyObjects;
+}
+
+vector<int> CMinesweeper::GetNearbySweepers(vector<CMinesweeper> &tanks, double range){
+	vector<int> nearbyTanks;
+	double rangesquared = range*range;
+	for(int i=0; i < tanks.size(); i++){
+		if(&tanks[i] == this)
+			continue;
+
+		double len_to_object = Vec2DLengthSquared(tanks[i].Position() - m_vPosition);
+
+		if (len_to_object <= rangesquared)
+		{
+			nearbyTanks.push_back(i);	
 		}
 	}
 
-	return nearbyObjects;
+	return nearbyTanks;
 }
+
 
 //----------------------GetClosestObject()---------------------------------
 //
@@ -299,6 +333,14 @@ bool CMinesweeper::CheckCollides(CCollisionObject &object, double size){
 	}
 
 	return false;
+}
+
+void CMinesweeper::SetInactive(){
+	active = false;
+}
+
+bool CMinesweeper::IsActive(){
+	return active;
 }
 
 		

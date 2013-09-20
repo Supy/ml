@@ -55,6 +55,8 @@ private:
   bool		minesForwardRight;
   bool		minesLeft;
   bool		minesRight;
+
+  bool active;
   
 
 public:
@@ -63,12 +65,14 @@ public:
 	CMinesweeper();
 	
 	//updates the information from the sweepers enviroment
-	bool			Update(vector<CCollisionObject> &objects, CMlp &mlp);
+	bool			Update(vector<CCollisionObject> &objects, vector<CMinesweeper> &tanks, CMlp &mlp);
 
 	//used to transform the sweepers vertices prior to rendering
 	void			WorldTransform(vector<SPoint> &sweeper);
 
 	vector<int> GetNearbySupermines(vector<CCollisionObject> &objects, double range);
+
+	vector<int> GetNearbySweepers(vector<CMinesweeper> &tanks, double range);
 
 	//returns a vector to the closest object
 	SVector2D	GetClosestMine(vector<CCollisionObject> &objects);
@@ -94,6 +98,9 @@ public:
 	// SuperMines
 	void		IncrementSuperMinesGathered(){++m_dSuperMinesGathered;}
 	double		SuperMinesGathered()const{return m_dSuperMinesGathered;}
+
+	void		SetInactive();
+	bool		IsActive();
 
 
   

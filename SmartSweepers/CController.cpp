@@ -48,37 +48,7 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
                                          cxClient(CParams::WindowWidth),
                                          cyClient(CParams::WindowHeight)
 {
-	//let's create the mine sweepers
-	for (int i=0; i<m_NumSweepers; ++i)
-	{
-		m_vecSweepers.push_back(CMinesweeper());
-	}
-
-	//initialize mines in random positions within the application window
-	for (int i=0; i<m_NumSuperMines; ++i)
-	{
-		m_vecObjects.push_back(CCollisionObject(CCollisionObject::SuperMine, SVector2D(RandFloat() * cxClient, RandFloat() * cyClient)));
-	}
-
-	for (int i=0; i<m_NumMines; ++i)
-	{
-		SVector2D position;
-		// don't spawn on super mines.
-		boolean collision = false;
-		do{
-			position = SVector2D(RandFloat() * cxClient, RandFloat() * cyClient);
-			collision = false;
-			for(int i=0; i < m_vecObjects.size(); i++){
-				if(m_vecObjects[i].getType() == CCollisionObject::SuperMine){
-					if(Vec2DLengthSquared(position-m_vecObjects[i].getPosition()) <= mineSpawnThreshold){
-						collision = true;
-						break;
-					}
-				}
-			}
-		}while(collision);
-		m_vecObjects.push_back(CCollisionObject(CCollisionObject::Mine, position));
-	}
+	ResetEnvironment();
 
 	//create a pen for the graph drawing
 	m_BluePen  = CreatePen(PS_SOLID, 1, RGB(0, 0, 255));
@@ -172,10 +142,13 @@ bool CController::Update()
 	//updated appropriately,
 	if (m_iTicks++ < CParams::iNumTicks)
 	{
-		for (int i=0; i<m_NumSweepers; ++i)
+		for (int i=0; i<m_vecSweepers.size(); ++i)
 		{
+			if(!m_vecSweepers[i].IsActive())
+				continue;
+
 			//update the position
-			if (!m_vecSweepers[i].Update(m_vecObjects, mlp))
+			if (!m_vecSweepers[i].Update(m_vecObjects, m_vecSweepers, mlp))
 			{
 				//error in processing the learning algorithm
 				MessageBox(m_hwndMain, "An error occured while processing!", "Error", MB_OK);
@@ -223,10 +196,10 @@ bool CController::Update()
 					m_vecSweepers[i].IncrementSuperMinesGathered();
 
 					m_vecObjects.erase(m_vecObjects.begin()+GrabHit);
-					--m_NumSuperMines;
-				}
-								
-			
+					
+					// Set sweeper inactive so we dont update it anymore
+					m_vecSweepers[i].SetInactive();
+				}		
 			}
 		}
 	}
@@ -237,7 +210,7 @@ bool CController::Update()
 		int max = 0;
 		int total = 0;
 
-		for (int i=0; i<m_NumSweepers; ++i)
+		for (int i=0; i<m_vecSweepers.size(); ++i)
 		{
 			int mg = m_vecSweepers[i].MinesGathered();				
 			total += mg;
@@ -254,7 +227,7 @@ bool CController::Update()
 		max = 0;
 		total = 0;
 
-		for (int i=0; i<m_NumSweepers; ++i)
+		for (int i=0; i<m_vecSweepers.size(); ++i)
 		{
 			int rg = m_vecSweepers[i].SuperMinesGathered();				
 			total += rg;
@@ -273,11 +246,8 @@ bool CController::Update()
 		//reset cycles
 		m_iTicks = 0;
 	
-		//reset the sweepers positions etc
-		for (int i=0; i<m_NumSweepers; ++i)
-		{
-			m_vecSweepers[i].Reset(m_vecObjects);
-		}
+		// Respawn SuperMines Each Generation
+		ResetEnvironment();
 	}
 
 	if(isFirstTick) isFirstTick = false;
@@ -300,7 +270,7 @@ void CController::Render(HDC surface)
 			m_OldPen = (HPEN)SelectObject(surface, m_GreenPen);
 		
 			//render the mines
-			for (int i=0; i<m_NumMines+m_NumSuperMines; ++i)
+			for (int i=0; i<m_vecObjects.size(); ++i)
 			{
 				if ( m_vecObjects[i].getType() == CCollisionObject::Mine)
 				{
@@ -333,8 +303,11 @@ void CController::Render(HDC surface)
 			SelectObject(surface, m_RedPen);
 
 			//render the sweepers
-			for (int i=0; i<m_NumSweepers; i++)
+			for (int i=0; i<m_vecSweepers.size(); i++)
 			{
+				if(!m_vecSweepers[i].IsActive())
+					continue;
+
 				if (i == CParams::iNumElite)
 				{
 					SelectObject(surface, m_OldPen);
@@ -550,3 +523,44 @@ void CController::PlotStats(HDC surface)
     SelectObject(surface, m_OldPen);
 }
 
+
+void CController::ResetEnvironment(){
+
+	m_vecSweepers.clear();
+	m_vecObjects.clear();
+
+	m_NumSweepers = CParams::iNumSweepers;
+	m_NumSuperMines = CParams::iNumSuperMines;
+
+	//let's create the mine sweepers
+	for (int i=0; i<m_NumSweepers; ++i)
+	{
+		m_vecSweepers.push_back(CMinesweeper());
+	}
+
+	//initialize mines in random positions within the application window
+	for (int i=0; i<m_NumSuperMines; ++i)
+	{
+		m_vecObjects.push_back(CCollisionObject(CCollisionObject::SuperMine, SVector2D(RandFloat() * cxClient, RandFloat() * cyClient)));
+	}
+
+	for (int i=0; i<m_NumMines; ++i)
+	{
+		SVector2D position;
+		// don't spawn on super mines.
+		boolean collision = false;
+		do{
+			position = SVector2D(RandFloat() * cxClient, RandFloat() * cyClient);
+			collision = false;
+			for(int i=0; i < m_vecObjects.size(); i++){
+				if(m_vecObjects[i].getType() == CCollisionObject::SuperMine){
+					if(Vec2DLengthSquared(position-m_vecObjects[i].getPosition()) <= mineSpawnThreshold){
+						collision = true;
+						break;
+					}
+				}
+			}
+		}while(collision);
+		m_vecObjects.push_back(CCollisionObject(CCollisionObject::Mine, position));
+	}
+}
