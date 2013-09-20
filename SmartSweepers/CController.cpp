@@ -192,8 +192,6 @@ bool CController::Update()
 
 				if(m_vecObjects[GrabHit].getType() == CCollisionObject::SuperMine)
 				{
-					//we have discovered a mine so increase MinesGathered
-					m_vecSweepers[i].IncrementSuperMinesGathered();
 
 					m_vecObjects.erase(m_vecObjects.begin()+GrabHit);
 					
@@ -222,22 +220,17 @@ bool CController::Update()
 		m_vecAvMinesGathered.push_back(average);
 		m_vecMaxMinesGathered.push_back(max);
 
-		// Update SuperMinesGathered average and max
+		// Update minesweepers remaining
 
-		max = 0;
 		total = 0;
 
 		for (int i=0; i<m_vecSweepers.size(); ++i)
 		{
-			int rg = m_vecSweepers[i].SuperMinesGathered();				
-			total += rg;
-			if (rg > max) max = rg;
-		}
-		
-		average = ((double)total / m_NumSweepers);
+			if(m_vecSweepers[i].IsActive())
+				total++;
+		}		
 
-		m_vecAvSuperMinesGathered.push_back(average);
-		m_vecMaxSuperMinesGathered.push_back(max);
+		m_vecSweepersActive.push_back(total);
 
 
 		//increment the iteration counter
@@ -461,16 +454,12 @@ void CController::PlotStats(HDC surface)
 		}
 	}
 
-	// -------------- SuperMines Gathered ----------------------------
+	// -------------- Sweepers remaining ----------------------------
+	std::string avgrstr =  "Num sweepers remaining:  ";
+
 		
-	std::string mostrstr = "Max SuperMines Collided:       ";
-	std::string avgrstr =  "Average SuperMines Collided:  ";
-	
-	temp = mostrstr + ((iterationcount > 0) ? ftos(m_vecMaxSuperMinesGathered.back()) : "-");
-	TextOut(surface, 5, 220, temp.c_str(), temp.size());
-		
-	temp = avgrstr + ((iterationcount > 0) ? ftos(m_vecAvSuperMinesGathered.back()) : "-");
-	TextOut(surface, 5, 240, temp.c_str(), temp.size());
+	temp = avgrstr + ((iterationcount > 0) ? ftos(m_vecSweepersActive.back()) : "-");
+	TextOut(surface, 5, 230, temp.c_str(), temp.size());
 
 	top = 260; bottom = 360;
 	left = 5; right = 395;
@@ -493,7 +482,7 @@ void CController::PlotStats(HDC surface)
 		if (iterationcount > lastSuperMinecmciteration)
 		{			
 			// calculate max
-			auto maxmaxSuperMinesptr = std::max_element(m_vecMaxSuperMinesGathered.begin()+displayit_start, m_vecMaxSuperMinesGathered.end());
+			auto maxmaxSuperMinesptr = std::max_element(m_vecSweepersActive.begin()+displayit_start, m_vecSweepersActive.end());
 			maxmaxSuperMines = *maxmaxSuperMinesptr;
 			if (maxmaxSuperMines == 0) maxmaxSuperMines = 1;
 
@@ -506,17 +495,10 @@ void CController::PlotStats(HDC surface)
 		MoveToEx(surface, left, bottom-2, NULL);
 		SelectObject(surface, m_RedPen);
 	
-		for (size_t i=displayit_start, l=0; i<m_vecMaxSuperMinesGathered.size(); ++i, ++l)
+		for (size_t i=displayit_start, l=0; i<m_vecSweepersActive.size(); ++i, ++l)
 		{
 			MoveToEx(surface, left + l, bottom, NULL);
-			LineTo(surface, left + l, bottom - m_vecMaxSuperMinesGathered[i]*scale);
-		}
-
-		MoveToEx(surface, left, bottom-2, NULL);
-		SelectObject(surface, m_BluePen);
-		for (size_t i=displayit_start, l=0; i<m_vecAvSuperMinesGathered.size(); ++i, ++l)
-		{
-		   LineTo(surface, left + l, bottom - m_vecAvSuperMinesGathered[i]*scale);
+			LineTo(surface, left + l, bottom - m_vecSweepersActive[i]*scale);
 		}
 	}
     //replace the old pen

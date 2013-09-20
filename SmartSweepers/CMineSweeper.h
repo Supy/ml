@@ -95,10 +95,6 @@ public:
 	void		IncrementMinesGathered(){++m_dMinesGathered;}
 	double		MinesGathered()const{return m_dMinesGathered;}
 
-	// SuperMines
-	void		IncrementSuperMinesGathered(){++m_dSuperMinesGathered;}
-	double		SuperMinesGathered()const{return m_dSuperMinesGathered;}
-
 	void		SetInactive();
 	bool		IsActive();
 

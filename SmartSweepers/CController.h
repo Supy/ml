@@ -57,12 +57,9 @@ private:
 	vector<double>		   m_vecMaxMinesGathered;
 
 
-	//stores the average SuperMinesGathered per iteration for use 
+	//stores the number of sweepers active at the end of each iteration
 	//in graphing.
-	vector<double>		   m_vecAvSuperMinesGathered;
-
-	//stores the most SuperMinesGathered per iteration
-	vector<double>		   m_vecMaxSuperMinesGathered;
+	vector<double>		   m_vecSweepersActive;
 
 
 	// render/update state
