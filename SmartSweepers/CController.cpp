@@ -59,6 +59,10 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 	m_BrownPen = CreatePen(PS_SOLID, 1, RGB(50,50,0));
 	m_OldPen	= NULL;
 
+	m_WhiteFill = CreateSolidBrush(RGB(255,255,255));
+	m_GreyFill = CreateSolidBrush(RGB(50,50,50));
+	m_RedFill = CreateSolidBrush(RGB(255,0,0));
+
 	//fill the vertex buffers
 	for (int i=0; i<NumSweeperVerts; ++i)
 	{
@@ -79,6 +83,8 @@ CController::CController(HWND hwndMain): m_NumSweepers(CParams::iNumSweepers),
 	maxmaxmines = 1;
 	lastSuperMinecmciteration = 0;
 	maxmaxSuperMines = 1;
+	lastAvgMinecmciteration = 0;
+	maxAvgMines = 1;
 }
 
 
@@ -218,7 +224,7 @@ bool CController::Update()
 		double average = ((double)total / m_NumSweepers);
 				
 		m_vecAvMinesGathered.push_back(average);
-		m_vecMaxMinesGathered.push_back(max);
+		m_vecMaxMinesGathered.push_back(total);
 
 		// Update minesweepers remaining
 
@@ -392,26 +398,73 @@ void CController::PlotStats(HDC surface)
 	
     
 	//=============== Iteration Graphs ==================================	
-	
 
+	// -------------- Total Mines Gathered ----------------------------
+	std::string gmpm = "Mines gathered per Minesweeper:       ";
+	TextOut(surface, 5, 290, gmpm.c_str(), gmpm.size());
 	
-
-	// -------------- Mines Gathered ----------------------------
-			
-	std::string mostmstr = "Max Mines Gathered:       ";
-	std::string avgmstr =  "Average Mines Gathered:  ";
-	
-	temp = mostmstr + ((iterationcount > 0) ? ftos(m_vecMaxMinesGathered.back()) : "-");
-	TextOut(surface, 5, 60, temp.c_str(), temp.size());
-		
-	temp = avgmstr + ((iterationcount > 0) ? ftos(m_vecAvMinesGathered.back()) : "-");
-	TextOut(surface, 5, 80, temp.c_str(), temp.size());
-	
-	int top = 100; int bottom = 200;
+	int top = 310; int bottom = 390;
 	int left = 5; int right = 395;
 
 	int width = right-left;
 	int displayit_start = (iterationcount > width) ? iterationcount - width : 0;
+
+	// draw border
+	SelectObject(surface, m_BlackPen);
+	SelectObject(surface, m_WhiteFill);
+
+	Rectangle(surface, left-1, top-1, right+1, bottom+1);
+
+	//first calculate scale
+	float maxCollected = 50;
+	for (int i=0; i<m_vecSweepers.size(); ++i)
+	{
+		int mg = m_vecSweepers[i].MinesGathered();			
+		if (mg > maxCollected) maxCollected = mg;
+	}
+
+	double scale = (bottom-top) / maxCollected;
+
+	int px = left;
+
+	float gap = 3.0f;
+	int w = ((right-left) - gap * (m_vecSweepers.size()-1)) / m_vecSweepers.size();
+
+	for (int i=0; i<m_vecSweepers.size(); ++i)
+	{
+		if (m_vecSweepers[i].IsActive() ) {
+			SelectObject(surface, m_RedFill);
+		} else {
+			SelectObject(surface, m_GreyFill);
+		}
+		Rectangle(surface, px, bottom-m_vecSweepers[i].MinesGathered()*scale, px+w, bottom+1);
+		px+=w+gap;
+
+	}
+	SelectObject(surface, m_WhiteFill);
+
+
+
+
+
+	
+	// -------------- Average Mines Gathered ------------------------
+	
+	std::string mostmstr = "Total Mines Gathered:       ";
+	
+	temp = mostmstr + ((iterationcount > 0) ? ftos(m_vecMaxMinesGathered.back()) : "-");
+	TextOut(surface, 5, 40, temp.c_str(), temp.size());
+
+	std::string avgmstr =  "Average Mines Gathered:  ";
+
+	temp = avgmstr + ((iterationcount > 0) ? ftos(m_vecAvMinesGathered.back()) : "-");
+	TextOut(surface, 5, 60, temp.c_str(), temp.size());
+	
+	top = 80; bottom = 170;
+	left = 5; right = 395;
+	
+	width = right-left;
+	displayit_start = (iterationcount > width) ? iterationcount - width : 0;
 
 	// draw border
 	SelectObject(surface, m_BlackPen);
@@ -424,44 +477,35 @@ void CController::PlotStats(HDC surface)
 	if (iterationcount > 0)
 	{
 		//run current max calculations if required
-		if (iterationcount > lastminecmciteration)
+		if (iterationcount > lastAvgMinecmciteration)
 		{			
 			// calculate max
-			auto maxmaxminesptr = std::max_element(m_vecMaxMinesGathered.begin()+displayit_start, m_vecMaxMinesGathered.end());
-			maxmaxmines = *maxmaxminesptr;
-			if (maxmaxmines == 0) maxmaxmines = 1;
+			auto maxavgminesptr = std::max_element(m_vecAvMinesGathered.begin()+displayit_start, m_vecAvMinesGathered.end());
+			maxAvgMines = *maxavgminesptr;
+			if (maxAvgMines == 0) maxAvgMines = 1;
 
-			lastminecmciteration = iterationcount;
+			lastAvgMinecmciteration = iterationcount;
 		}
 
 		// calculate scale
-		double scale = (bottom-top) / maxmaxmines;
+		double scale = (bottom-top) / maxAvgMines;
 
 		MoveToEx(surface, left, bottom-2, NULL);
 		SelectObject(surface, m_RedPen);
-	
-		for (size_t i=displayit_start, l=0; i<m_vecMaxMinesGathered.size(); ++i, ++l)
-		{
-			MoveToEx(surface, left + l, bottom, NULL);
-			LineTo(surface, left + l, bottom - m_vecMaxMinesGathered[i]*scale);
-		}
-
-		MoveToEx(surface, left, bottom-2, NULL);
-		SelectObject(surface, m_BluePen);
 		for (size_t i=displayit_start, l=0; i<m_vecAvMinesGathered.size(); ++i, ++l)
 		{
-		   LineTo(surface, left + l, bottom - m_vecAvMinesGathered[i]*scale);
+			MoveToEx(surface, left + l, bottom, NULL);
+		    LineTo(surface, left + l, bottom - m_vecAvMinesGathered[i]*scale);
 		}
 	}
 
 	// -------------- Sweepers remaining ----------------------------
 	std::string avgrstr =  "Num sweepers remaining:  ";
-
 		
 	temp = avgrstr + ((iterationcount > 0) ? ftos(m_vecSweepersActive.back()) : "-");
-	TextOut(surface, 5, 230, temp.c_str(), temp.size());
+	TextOut(surface, 5, 175, temp.c_str(), temp.size());
 
-	top = 260; bottom = 360;
+	top = 195; bottom = 285;
 	left = 5; right = 395;
 
 	width = right-left;

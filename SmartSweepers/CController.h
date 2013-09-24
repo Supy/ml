@@ -74,6 +74,10 @@ private:
 	//SuperMines 
 	int lastSuperMinecmciteration;
 	double maxmaxSuperMines;
+	//Avg
+	int lastAvgMinecmciteration;
+	double maxAvgMines;
+	
 	double mineSpawnThreshold;
 
 
@@ -85,6 +89,10 @@ private:
 	HPEN				m_BlackPen;
 	HPEN				m_PinkPen;
 	HPEN				m_BrownPen;
+
+	HBRUSH				m_WhiteFill;
+	HBRUSH				m_GreyFill;
+	HBRUSH				m_RedFill;
 	
 	//handle to the application window
 	HWND				m_hwndMain;
