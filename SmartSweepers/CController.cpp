@@ -398,8 +398,8 @@ void CController::PlotStats(HDC surface)
 
 	// -------------- Mines Gathered ----------------------------
 			
-	std::string mostmstr = "Max Mines Collided:       ";
-	std::string avgmstr =  "Average Mines Collided:  ";
+	std::string mostmstr = "Max Mines Gathered:       ";
+	std::string avgmstr =  "Average Mines Gathered:  ";
 	
 	temp = mostmstr + ((iterationcount > 0) ? ftos(m_vecMaxMinesGathered.back()) : "-");
 	TextOut(surface, 5, 60, temp.c_str(), temp.size());
