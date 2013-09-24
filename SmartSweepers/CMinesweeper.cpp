@@ -116,7 +116,7 @@ bool CMinesweeper::Update(vector<CCollisionObject> &objects, vector<CMinesweeper
 
 	// We want more than the closest mine. We want all mines within a certain radius to make a better decision
 	// on which direction to turn.
-	vector<int> nearbyObjects = GetNearbySupermines(objects, CParams::dMineScale + 8);
+	vector<int> nearbyObjects = GetNearbySupermines(objects, CParams::dMineScale + 9);
 	Vec2DNormalize(m_vLookAt);
 
 	// Shift the point we measure angles from to the back of the sweeper

@@ -564,12 +564,27 @@ void CController::ResetEnvironment(){
 		m_vecSweepers.push_back(CMinesweeper());
 	}
 
-	//initialize mines in random positions within the application window
+	//initialize super mines in random positions within the application window
+	// such that they aren't spawned on a sweeper
 	for (int i=0; i<m_NumSuperMines; ++i)
 	{
-		m_vecObjects.push_back(CCollisionObject(CCollisionObject::SuperMine, SVector2D(RandFloat() * cxClient, RandFloat() * cyClient)));
+		SVector2D position;
+		// don't spawn on sweepers. keep finding another location if they do.
+		boolean collision = false;
+		do{
+			position = SVector2D(RandFloat() * cxClient, RandFloat() * cyClient);
+			collision = false;
+			for(int i=0; i < m_vecSweepers.size(); i++){
+				if(Vec2DLengthSquared(position-m_vecSweepers[i].Position()) <= mineSpawnThreshold){
+					collision = true;
+					break;
+				}
+			}
+		}while(collision);
+		m_vecObjects.push_back(CCollisionObject(CCollisionObject::SuperMine, position));
 	}
 
+	// Spawn mines
 	for (int i=0; i<m_NumMines; ++i)
 	{
 		SVector2D position;
